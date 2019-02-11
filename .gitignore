@@ -1,0 +1,10 @@
+.Rproj.user
+.Rhistory
+.RData
+.Ruserdata
+*.Rproj
+*.lnk
+# data files
+*.html
+*.xlsx
+/app/data/*
