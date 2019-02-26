@@ -26,3 +26,18 @@ After familiarizing myself with the Access databases, I realized I was unable to
 See sandbox/get_data_from_access_FAIL.R for my failed attempts and websites.
 
 I asked if using FromR1.csv and FromR5.csv would be sufficient/equivalent, and was told yes!
+(NB: FromR5.csv column "-4" includes age 0, so must remove it from 1-4 group.)
+
+
+### TYPEIDs and TYPEs
+TYPE 0 = British Columbia
+CF = Children and Family Development,             Levels 0,1-4          (5 in total)
+DR = Development Region,                          Levels 0,1-8          (9 in total)
+HA = Local Health Area,                           Levels 0,1-373        (105 in total)
+HY = Health Authority,                            Levels 1-6            (6 in total, No 0=BC)
+HS = Health Service Delivery Area,                Levels 0,11-53        (17 in total)
+PS = College Region,                              Levels 0,1-15         (16 in total)
+RD = Regional District,                           Levels 0,1000-59000   (30 in total)
+SD = School District,                             Levels 0,5-92         (60 in total)
+SR = Special Regions (CMAs and Vancouver Island), Levels 0,400-935      (7 in total)
+
