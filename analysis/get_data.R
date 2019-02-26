@@ -53,7 +53,7 @@ data.pretty.1 <- function(df) {
                         case_when(gender == 1 ~ "M",
                                   gender == 2 ~ "F",
                                   gender == 3 ~ "T")) %>%
-    select(TYPEID = Region, TYPE = Region.Type, Year, Gender, 
+    select(Region, Region.Type, Year, Gender, 
            A0:A89, A90 = `-90`, TOTAL = `-999`)
   
   # save as RDS
@@ -81,8 +81,10 @@ data.pretty.5 <- function(df) {
   df <- df %>% mutate(Gender = 
                         case_when(gender == 1 ~ "M",
                                   gender == 2 ~ "F",
-                                  gender == 3 ~ "T")) %>%
-    select(TYPEID = Region, TYPE = Region.Type, Year, Gender, "LT1":"A90PL", TOTAL)
+                                  gender == 3 ~ "T"),
+                      # FromR5.csv column "-4" includes LT1, so must remove it from 1-4 group
+                      A1_4 = A1_4 - LT1) %>%
+    select(Region, Region.Type, Year, Gender, "LT1":"A90PL", TOTAL)
   
   # save as RDS
   saveRDS(df, paste0("app/data/data5.rds"))
