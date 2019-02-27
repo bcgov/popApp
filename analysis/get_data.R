@@ -12,7 +12,7 @@ data.pretty <- function(df, age_var) {
   col_specs <- cols(.default = col_integer(), Region.Type = col_character())
   
   # read in data
-  df <- readr::read_csv(here("app","data",paste0("FromR",age_var,".csv")), col_names = TRUE, col_specs)
+  df <- readr::read_csv(here("analysis","inputs",paste0("FromR",age_var,".csv")), col_names = TRUE, col_specs)
   
   # fix age column names and order
   if(age_var == 5){
@@ -46,7 +46,7 @@ data.pretty <- function(df, age_var) {
            -gender, `90+`, Total)
   
   # open lookup and join in Region.Names
-  lookup <- readr::read_csv(here("app","data","lookup.csv"), col_names = TRUE, col_types = "dcc")
+  lookup <- readr::read_csv(here("analysis","inputs","lookup.csv"), col_names = TRUE, col_types = "dcc")
   df <- left_join(df, lookup, by = c("Region", "Region.Type")) %>%
     select(Region, Region.Name = NAME, everything())
   
