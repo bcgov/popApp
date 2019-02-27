@@ -14,34 +14,27 @@ data.pretty <- function(df, age_var) {
   # read in data
   df <- readr::read_csv(here("app","data",paste0("FromR",age_var,".csv")), col_names = TRUE, col_specs)
   
-  # use column names with A in front of age
-  if(age_var == 1){
-
-    # for single-year intervals
-    A_cols <- paste0("A", colnames(df)[which(colnames(df) == "0"):which(colnames(df) == "89")])
-    colnames(df)[which(colnames(df) == "0"):which(colnames(df) == "89")] <- A_cols
-
-  } else if(age_var == 5){
+  # fix age column names and order
+  if(age_var == 5){
     
     # for 5-year intervals
-    A_cols <- c("A85_89","A80_84","A75_79","A70_74","A65_69","A60_64","A55_59","A50_54",
-                "A45_49","A40_44","A35_39","A30_34","A25_29","A20_24","A15_19","A10_14",
-                "A5_9","A1_4","LT1")
+    A_cols <- c("85-89","80-84","75-79","70-74","65-69","60-64","55-59","50-54",
+                "45-49","40-44","35-39","30-34","25-29","20-24","15-19","10-14",
+                "5-9","1-4","<1")
     colnames(df)[which(colnames(df) == "-89"):which(colnames(df) == "0")] <- A_cols
-    #colnames(df)[which(colnames(df) == "0"):which(colnames(df) == "-89")] <- rev(A_cols)
     
-    # FromR5.csv column "-4" includes LT1 (age=0), so must remove it from A1-4 group
-    df <- df %>% mutate(A1_4 = A1_4 - LT1)
+    # FromR5.csv column "-4" includes LT1 (<1 = age=0), so must remove it from 1-4 group
+    df <- df %>% mutate(`1-4` = `1-4` - `<1`)
     
     # correct the reversed order of age groups
     df <- df %>% select(Year:"-90", 
-             colnames(df)[which(colnames(df) == "LT1"):which(colnames(df) == "A85_89")], 
+             colnames(df)[which(colnames(df) == "<1"):which(colnames(df) == "85-89")], 
              gender)
   }
   
-  # rename TOTAL and 90+ cols
-  colnames(df)[which(colnames(df) == "-999")] <- "TOTAL"
-  colnames(df)[which(colnames(df) == "-90")] <- "A90+"
+  # rename Total and 90+ cols
+  colnames(df)[which(colnames(df) == "-999")] <- "Total"
+  colnames(df)[which(colnames(df) == "-90")] <- "90+"
   
   # create character Gender var and re-arrange columns
   df <- df %>% mutate(Gender = 
@@ -49,8 +42,8 @@ data.pretty <- function(df, age_var) {
                                   gender == 2 ~ "F",
                                   gender == 3 ~ "T")) %>%
     select(Region, Region.Type, Year, Gender, 
-           colnames(df)[(which(colnames(df) == "A90+")+1):(which(colnames(df) == "gender")-1)],
-           -gender, `A90+`, TOTAL)
+           colnames(df)[(which(colnames(df) == "90+")+1):(which(colnames(df) == "gender")-1)],
+           -gender, `90+`, Total)
   
   # open lookup and join in Region.Names
   lookup <- readr::read_csv(here("app","data","lookup.csv"), col_names = TRUE, col_types = "dcc")
