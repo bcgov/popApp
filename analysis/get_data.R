@@ -72,6 +72,8 @@ data.pretty <- function(df, age_var) {
     )
   )
   
+  df <- df %>% filter(!is.na(Region.Name))
+  
   # save as RDS
   saveRDS(df, paste0("app/data/data",age_var,".rds"))
   
