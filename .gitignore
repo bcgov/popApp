@@ -7,5 +7,6 @@
 # data files
 *.html
 *.xlsx
+*.csv
 /app/data/*
 /sandbox/*
