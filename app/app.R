@@ -17,6 +17,12 @@ if (!require('shinydashboard')) install.packages('shinydashboard')
 
 
 
+## TO-DOs ----
+## Make Generate Output button be required even when changing options, not just first time.
+## Add 'Reset selection' button.
+
+
+
 ## read data ----
 data1 <- readRDS("data/data1.rds")  ## by single-year intervals
 data5 <- readRDS("data/data5.rds")  ## by 5-year intervals
@@ -27,7 +33,7 @@ data5 <- readRDS("data/data5.rds")  ## by 5-year intervals
 ui <- shinydashboard::dashboardPage(
   
   ## header ----
-  dashboardHeader(title="Sub-Provincial Population Estimates",
+  dashboardHeader(title = h4(HTML("Sub-Provincial<br/>Population Estimates")),  ## add break to header
                   titleWidth = 350,
                   tags$li(class = "dropdown",
                           style = "width:auto;",
@@ -100,7 +106,7 @@ ui <- shinydashboard::dashboardPage(
           column(width = 3, br(),
                  tags$b("Example:"),
                  tableOutput(outputId = "example_table")
-                 #img(src = "PopEstimatesCustomAgeGroups.sflb.jpg", title = "BC Stats", height = "100px")
+                 #img(src = "PopEstimatesCustomAgeGroups.sflb.jpg", title = "BC Stats", height = "100px") ## in app\www folder
                  ),  ## end of column
           ## this is ugly but I don't understand how to get rhandsontable to work
           #box(
@@ -203,7 +209,7 @@ server <- function(input, output, session) {
   output$Age_Type <- renderUI({
     radioButtons(inputId = "Age_Type:",
                  label = "Select type of age group:", 
-                 choices = c("Totals", "5-year Age Groups", "Custom Age Groups"),
+                 choices = c("5-year Age Groups", "Totals", "Custom Age Groups"),
                  selected = "Totals")
   })
 
@@ -231,10 +237,9 @@ server <- function(input, output, session) {
   # })
 
 
-  ## data table ----
-  ## Create reactive values for input data
-
-  output$table <- renderDataTable({
+  ## data table and download ----
+  ## Create reactive values for input data to create table and download data
+  data_df <- reactive({
     
     ## A. req() seems to keep it from running until all options below are chosen
     req(input$Region.Type)
@@ -252,7 +257,7 @@ server <- function(input, output, session) {
     if(input$Age_Type == "5-year Age Groups") {
       df <- data5
     }
-
+    
     if(input$Age_Type == "Custom Age Groups") {
       
       ## 0a. create data frame of custom age groups user typed in
@@ -284,38 +289,38 @@ server <- function(input, output, session) {
             !!A1 := rowSums(data1[which(names(data1) == custom_ages$S[1]):
                                     which(names(data1) == custom_ages$E[1])], dims = 1)) %>%
           select(-(which(names(data1) == 0):which(names(data1) == "90+")))
-
+        
       } else {
         ## otherwise, just select out single-age columns (on odd chance someone skips row 1)
         df <- data1 %>%
           select(-(which(names(data1) == 0):which(names(data1) == "90+")))
       }
-
+      
       ## 2. if custom age group 2 is not NA, calculate and display its data
       if(!is.na(custom_ages$S[2]) & !is.na(custom_ages$E[2])){
-      
+        
         A2 <- c(paste0(min(custom_ages$S[2], custom_ages$E[2]), " - ", max(custom_ages$S[2], custom_ages$E[2])))
         df <- df %>%
           mutate(
             !!A2 := rowSums(data1[which(names(data1) == custom_ages$S[2]):
                                     which(names(data1) == custom_ages$E[2])], dims = 1))
-
+        
       } 
       
       ## 3. if custom age group 3 is not NA, calculate and display its data
       if(!is.na(custom_ages$S[3]) & !is.na(custom_ages$E[3])){
-
+        
         A3 <- c(paste0(min(custom_ages$S[3], custom_ages$E[3]), " - ", max(custom_ages$S[3], custom_ages$E[3])))
         df <- df %>%
           mutate(
             !!A3 := rowSums(data1[which(names(data1) == custom_ages$S[3]):
                                     which(names(data1) == custom_ages$E[3])], dims = 1))
-
+        
       }
       
       ## 4. if custom age group 4 is not NA, calculate and display its data
       if(!is.na(custom_ages$S[4]) & !is.na(custom_ages$E[4])){
-
+        
         A4 <- c(paste0(min(custom_ages$S[4], custom_ages$E[4]), " - ", max(custom_ages$S[4], custom_ages$E[4])))
         df <- df %>%
           mutate(
@@ -323,17 +328,17 @@ server <- function(input, output, session) {
                                     which(names(data1) == custom_ages$E[4])], dims = 1))
         
       }
-
-       ## 5. if custom age group 5 is not NA, calculate and display its data
-       if(!is.na(custom_ages$S[5]) & !is.na(custom_ages$E[5])){
-          
+      
+      ## 5. if custom age group 5 is not NA, calculate and display its data
+      if(!is.na(custom_ages$S[5]) & !is.na(custom_ages$E[5])){
+        
         A5 <- c(paste0(min(custom_ages$S[5], custom_ages$E[5]), " - ", max(custom_ages$S[5], custom_ages$E[5])))
         df <- df %>%
           mutate(
             !!A5 := rowSums(data1[which(names(data1) == custom_ages$S[5]):
                                     which(names(data1) == custom_ages$E[5])], dims = 1))
         
-       }
+      }
       
       ## put Total column at end
       df <- df %>% mutate(Total2 = Total) %>%
@@ -341,37 +346,48 @@ server <- function(input, output, session) {
         rename(Total = Total2)
       
     }
-
+    
     ## C. make selections
     Reg.Type <- c(input$Region.Type)  ## to be able to use as dynamic name in select
-    df[df$Region.Type == input$Region.Type, ] %>%
+    tab <- df[df$Region.Type == input$Region.Type, ] %>%
       filter(Region.Name %in% input$Region.Name) %>%
       filter(Year %in% input$Year) %>%
       filter(Gender %in% input$Gender) %>%
       select(Region, !!Reg.Type := Region.Name, everything(), -Region.Type)
-
-  },
-  ## D. table options: https://shiny.rstudio.com/articles/datatables.html
-  options = list(
-    pageLength = 10, ## makes it show only X rows/page; https://datatables.net/reference/option/pageLength
-    lengthMenu = c(10, 20, 25, 50), ## choices of pageLength to display
-    scrollX = TRUE,  ## allows horizontal scrolling; https://datatables.net/reference/option/scrollX
-    #searching = FALSE  ## turns off search ability (but this turns off ALL search: by column AND overall)
-    searchable = FALSE
-    #searchCols = FALSE ## crashes app
-    #searchCols = NULL ## deletes all data rows
-    #dom = 'lrtip'  ## default = 'lfrtip';
-    # l - length changing input control (i.e., Show [ X ] entries)
-    # f - filtering input (i.e., search bar)
-    # t - The table!
-    # i - Table information summary (i.e., Showing X of Y of Z entries)
-    # p - pagination control (i.e., Previous, 1, ..., Next)
-    # r - processing display element (???)
-    #buttons = 'csv'
-  ))
-
+    
+    ## D. call data_df() in renderDataTable to create table in app
+    ## E. call data_df() in downloadHandler to download data
   
-  ## E. Header filters to show what was selected
+  })
+
+  output$table <- renderDataTable({
+    
+    ## call function to create specified data table
+    data_df()
+    
+    },
+    
+    ## table options: https://shiny.rstudio.com/articles/datatables.html
+    options = list(
+      pageLength = 10, ## makes it show only X rows/page; https://datatables.net/reference/option/pageLength
+      lengthMenu = c(10, 20, 25, 50), ## choices of pageLength to display
+      scrollX = TRUE,  ## allows horizontal scrolling; https://datatables.net/reference/option/scrollX
+      #searching = FALSE  ## turns off search ability (but this turns off ALL search: by column AND overall)
+      searchable = FALSE
+      #searchCols = FALSE ## crashes app
+      #searchCols = NULL ## deletes all data rows
+      #dom = 'lrtip'  ## default = 'lfrtip';
+      # l - length changing input control (i.e., Show [ X ] entries)
+      # f - filtering input (i.e., search bar)
+      # t - The table!
+      # i - Table information summary (i.e., Showing X of Y of Z entries)
+      # p - pagination control (i.e., Previous, 1, ..., Next)
+      # r - processing display element (???)
+      #buttons = 'csv'
+    )
+  )  ## end of renderDataTable()
+
+  ## Header filters to show what was selected
   # output$filter1 <- renderUI({
   #   req(input$Region.Type)
   #   req(input$Region)
@@ -380,6 +396,16 @@ server <- function(input, output, session) {
   #   HTML("<em>",input$Region.Type,",",input$Region,",",input$Year,",",input$Gender,"</em>")
   # })
 
+  output$download_data <- downloadHandler(
+    
+    filename = function() {
+      c("Population_Estimates.csv")
+    },
+    
+    content = function(file) {
+      write.csv(data_df(), file, row.names = FALSE, na = "")  ## col.names = FALSE, append = TRUE, 
+    }
+  )  ## end of downloadHandler()
 
 }
 
