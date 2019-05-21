@@ -1,4 +1,3 @@
-#
 # This is a Shiny web application. You can run the application by clicking
 # the 'Run App' button above.
 #
@@ -10,17 +9,17 @@
 #
 
 ## load libraries  ----
-library(tidyverse)
-library(shiny)  ## for regular shiny app built with fluidPage()
-library(shinydashboard)  ## for prepackaged layout dashboard app built with dashboardPage()
-#library(shinythemes)
-#library(flexdashboard)  ## for gaugeOutput
-##library(ggplot2)
-##library(plotly)
+## installs any missing packages this script uses
+if (!require('tidyverse')) install.packages('tidyverse')
+if (!require('shiny')) install.packages('shiny')
+if (!require('shinydashboard')) install.packages('shinydashboard')
+#if (!require('rhandsontable')) install.packages('rhandsontable')
+
 
 
 ## read data ----
-data <- readRDS("data.rds")
+data1 <- readRDS("data/data1.rds")  ## by single-year intervals
+data5 <- readRDS("data/data5.rds")  ## by 5-year intervals
 
 
 ## Define UI for application ----
@@ -28,50 +27,363 @@ data <- readRDS("data.rds")
 ui <- shinydashboard::dashboardPage(
   
   ## header ----
-  dashboardHeader(title = "dashboardHeader"),
-  
-  
+  dashboardHeader(title="Sub-Provincial Population Estimates",
+                  titleWidth = 350,
+                  tags$li(class = "dropdown",
+                          style = "width:auto;",
+                          tags$td(a(href = "https://www2.gov.bc.ca/gov/content/data/about-data-management/bc-stats",
+                                    img(src = "bcstats_logo_rev.png", title = "BC Stats", height = "100px"),
+                                    style = "display:block; padding-top:1px; padding-bottom:1px; padding-right:10px;"
+                                    )  ## end of a(href)
+                                  )#,  ## end of tags$td
+                          #tags$script(HTML("$('body').addClass('fixed');"))  ## Forces header and sidebar to not scroll,
+                          )  ## end of tags$li
+                  ),  ## end of dashboardHeader
+
+
   ## sidebar ----
-  dashboardSidebar("dashboardSidebar",
-                   sidebarMenu(
-                     menuItem("menuItem1", tabName = "menuItem1", icon = icon("dashboard")),
-                     menuItem("menuItem2", tabName = "menuItem2", icon = icon("th"))
-                     )
-                   ),
-  
-  
+  dashboardSidebar(#"dashboardSidebar",
+                   # sidebarMenu(
+                   #   menuItem("menuItem1", tabName = "menuItem1", icon = icon("dashboard")),
+                   #   menuItem("menuItem2", tabName = "menuItem2", icon = icon("th"))
+                   #   )
+                   # ),
+    width = 350,
+    ## align left side of download button with selectInput menu
+    tags$style(HTML(".button1{margin-left: 15px} ")),
+    br(),
+    tags$em(helpText("This interactive tool allows you to select the region(s), year(s) and sex(es)
+                      of interest for age groupings of your choice.",
+                     style="font-size:16px; margin-left:10px; margin-top:10px; display:block; color:#fff")),
+    uiOutput("Region.Type"),
+    uiOutput("Region.Name"),
+    uiOutput("Year"),
+    uiOutput("Gender"),
+    #uiOutput("Age_Type"),  ## put in body instead
+    
+    # sidebarMenu(
+    #   #menuItem("Dashboard", tabName = "main"),  ## required if use tabItems(tabItem())
+    #   selectInput(inputId = "Region.Type",
+    #               label = "Select a region type:",
+    #               choices = unique(data1$Region.Type),
+    #               selected = "Local Health Area"),  ## end of selectInput
+    #   selectInput(inputId = "Region.Name",
+    #               label = "Select region(s):",
+    #               choices = unique(data1$Region),
+    #               selected = "British Columbia",
+    #               multiple = TRUE)  ## end of selectInput
+    # ),  ## end of sidebarMenu
+    br(),br(),
+    tags$b("Download as csv:",
+           style = "font-size:14px; margin-left:15px; margin-top:10px; margin-bottom:5px; display:block; color:#fff"),
+    downloadButton(outputId = "download_data", label = "Download Data", class = "button1")
+  ),  ## end of dashboardSidebar
+
+    
   ## body ----
   dashboardBody(#"dashboardBody starts here",
-
-    tabItems(
-
-      ## first tab content ----
-      tabItem(tabName = "menuItem1",
-              fluidRow(
-                h2("First tab content"),
-                box(plotOutput("plot1", height = 250)),  # Boxes need to be put in a row (or column)
-                
-                box(
-                  title = "Controls",
-                  sliderInput("slider", "Number of observations:", 1, 100, 50)
-                )
-              )
-      ),  ## end of tabItem 1
-      
-      ## second tab content ----
-      tabItem(tabName = "menuItem2",
-              h2("Second tab content")
-      )  ## end of tabItem 2
-    )  ## end of tabItems
+    #br(),br(),
+    # tabItems(
+    #   tabItem(tabName = "menuItem1",
+    fluidRow(#h2("First tab content"),
+      box(
+          helpText("Select a region type, and then the region(s), year(s) and sex(es) of interest. 
+               Use the Ctrl and/or Shift keys to select multiple entries. Then select whether you'd 
+               like results by 5-year age groups, totals, or your own custom age groupings. If you 
+               would like to specify your own custom age groups, select 'Custom Age Groups' and 
+               enter them in the boxes to the right as seen in the example below. Then click 
+               'Generate output'. You can view the results on screen or download a CSV file.",
+                style="font-size:16px"),
+          column(width = 3, br(),
+                 uiOutput("Age_Type")
+                 ),  ## end of column
+          column(width = 3, br(),
+                 tags$b("Example:"),
+                 tableOutput(outputId = "example_table")
+                 #img(src = "PopEstimatesCustomAgeGroups.sflb.jpg", title = "BC Stats", height = "100px")
+                 ),  ## end of column
+          ## this is ugly but I don't understand how to get rhandsontable to work
+          #box(
+           fluidRow(
+             tags$b("Custom Age Types:"),
+                    #),
+            #fluidRow(rHandsontableOutput(outputId = "custom_ages")
+             br(),
+             column(width = 3,
+                       tags$b("From"),
+                       numericInput(inputId = "start1", label = NULL, value = NA, min = 0, max = 99),
+                       numericInput(inputId = "start2", label = NULL, value = NA, min = 0, max = 99),
+                       numericInput(inputId = "start3", label = NULL, value = NA, min = 0, max = 99),
+                       numericInput(inputId = "start4", label = NULL, value = NA, min = 0, max = 99),
+                       numericInput(inputId = "start5", label = NULL, value = NA, min = 0, max = 99)
+                       ), ## end of column (starts)
+                column(width = 3,
+                       tags$b("To"),
+                       numericInput(inputId = "end1", label = NULL, value = NA, min = 0, max = 99),
+                       numericInput(inputId = "end2", label = NULL, value = NA, min = 0, max = 99),
+                       numericInput(inputId = "end3", label = NULL, value = NA, min = 0, max = 99),
+                       numericInput(inputId = "end4", label = NULL, value = NA, min = 0, max = 99),
+                       numericInput(inputId = "end5", label = NULL, value = NA, min = 0, max = 99)
+                       ) ## end of column (ends)
+            ),  ## end of fluidRow
+          actionButton(inputId = "goButton", label = "Generate output"),
+          #  solidHeader = TRUE,
+          #  width = 6
+          # ), ## end of box
+          br(),br(),
+          #status = "primary",
+          #solidHeader = TRUE,
+          #collapsible = TRUE,
+          width = 12,
+          #title = "Background",
+          dataTableOutput(outputId = "table")
+          )  ## end of box; boxes need to be put in a row (or column)
+      )  ## end of fluidRow
+#     )  ## end of tabItem 1
+#    )  ## end of tabItems
   )  ## end of dashboardBody
 )  ## end of dashboardPage
 
 
+
 ## Define server logic ----
-server <- function(input, output) {
+server <- function(input, output, session) {
   
+  ## selections ----
+  ## defaults: selectInput(inputId, label, choices, selected = NULL, multiple = FALSE, 
+  ##                       selectize = TRUE, width = NULL, size = NULL)
+  ## size = how many items to show in box, requires selectize = FALSE
+  
+  ## select Region.Type, just one
+  output$Region.Type <- renderUI({
+    selectInput(inputId = "Region.Type",
+                label = "Select a region type:",
+                choices = unique(data1$Region.Type),
+                #choices = as.character(unique(data1$Region.Type)),
+                selected = "Local Health Area")
+  })
+
+  ## select Region(s) within selected Region.Type, multiples OK
+  output$Region.Name <- renderUI({
+    selectInput(inputId = "Region.Name",
+                label = "Select region(s):",
+                choices = unique(data1$Region.Name[data1$Region.Name == unique(data1$Region.Name)[1]]),
+                multiple = TRUE,
+                selectize = FALSE, size = 7)
+  })
+
+  ## update Region.Name choices based on selected Region.Type
+  observeEvent(input$Region.Type,{
+    updateSelectInput(session,
+                      inputId = "Region.Name",
+                      choices = unique(data1$Region.Name[data1$Region.Type == input$Region.Type]))
+  })
+
+  ## select Year(s), multiples OK
+  output$Year <- renderUI({
+    selectInput(inputId = "Year",
+                label = "Select year(s):",
+                choices = unique(data1$Year),
+                #choices = as.character(unique(data1$Year)),
+                #selected = max(unique(data1$Year)),
+                multiple = TRUE,
+                selectize = FALSE, size = 7)
+  })
+
+  ## select Sex(es), multiples OK
+  output$Gender <- renderUI({
+    selectInput(inputId = "Gender",
+                label = "Select sex(es):",
+                choices = c("Males" = "M", "Females" = "F", "Totals" = "T"),
+                multiple = TRUE,
+                selectize = FALSE, size = 3) ## QQ: Is 4 a minimum? It's ignoring size=3
+  })
+  
+  ## select type of age group, just one
+  output$Age_Type <- renderUI({
+    radioButtons(inputId = "Age_Type:",
+                 label = "Select type of age group:", 
+                 choices = c("Totals", "5-year Age Groups", "Custom Age Groups"),
+                 selected = "Totals")
+  })
+
+  ## example table for custom age groups (as text to keep decimals out)
+  output$example_table <- renderTable({
+    matrix(data = c("15", "24",  "25", "54",  "55", "64",  "65", "99", "__", "__"), 
+           nrow = 5, ncol = 2, byrow = TRUE, dimnames = list(c(1:5), c("From", "To")))
+  })
+
+
+  # ## custom age groups with rhandsontable:
+  # 
+  # # http://jrowen.github.io/rhandsontable/
+  # output$custom_ages <- renderRHandsontable({
+  #   ##  create empty dataframe, and add 5 rows
+  #   DF <- data.frame(From = as.numeric(), To = as.numeric(), stringsAsFactors = FALSE)
+  #   for (i in 1:5) {
+  #     DF <- add_row(DF, From = NA, To = NA)
+  #     i = i + 1
+  #   }
+  #   rm(i)
+  #   
+  #   ## convert to rhandsontable
+  #   rhandsontable(DF, digits = 0, stretchH = "all")
+  # })
+
+
+  ## data table ----
+  ## Create reactive values for input data
+
+  output$table <- renderDataTable({
+    
+    ## A. req() seems to keep it from running until all options below are chosen
+    req(input$Region.Type)
+    req(input$Region.Name)
+    req(input$Year)
+    req(input$Gender)
+    req(input$goButton)
+    
+    ## B. set df as appropriate dataset depending on age group type chosen
+    if(input$Age_Type == "Totals") {
+      df <- data1 %>% 
+        select(Region, Region.Name, Region.Type, Year, Gender, Total)
+    }
+    
+    if(input$Age_Type == "5-year Age Groups") {
+      df <- data5
+    }
+
+    if(input$Age_Type == "Custom Age Groups") {
+      
+      ## 0a. create data frame of custom age groups user typed in
+      custom_ages <- data.frame(S = c(input$start1, input$start2, input$start3, input$start4, input$start5), 
+                                E = c(input$end1, input$end2, input$end3, input$end4, input$end5), 
+                                stringsAsFactors = FALSE)
+      
+      ## 0b. if input (start or end) is decimal,  drop it from calculations.
+      ## if input (start or end) is < min or > max single age, replace with min/max in df and label.
+      ## if startX > endX, calculation will be correct, and use min and max in labelling for right order
+      min_single_age <- 0
+      max_single_age <- 89
+      custom_ages <- custom_ages %>% 
+        mutate_at(c("S", "E"), ~ case_when(str_detect(.x, pattern = "\\.") ~ NA_character_,  ## anything with decimal will be dropped
+                                           .x < min_single_age ~ "0",    ## any whole # < 0 will be re-set to 0
+                                           .x > max_single_age ~ "90+",  ## any whole # > 89 will be re-set to 90+
+                                           TRUE ~ as.character(.x)))
+      
+      ## 1. if custom age group 1 is not NA, calculate and display its data
+      if(!is.na(custom_ages$S[1]) & !is.na(custom_ages$E[1])){
+        
+        ## 1a. create label of custom age group 1 (to be able to use as dynamic name in select)
+        ## use min number first, then max number (in case entered backwards)
+        A1 <- c(paste0(min(custom_ages$S[1], custom_ages$E[1]), " - ", max(custom_ages$S[1], custom_ages$E[1])))
+        
+        ## 1b. create custom age group 1, drop single-year columns, place Total at end (after new variable)
+        df <- data1 %>%
+          mutate(
+            !!A1 := rowSums(data1[which(names(data1) == custom_ages$S[1]):
+                                    which(names(data1) == custom_ages$E[1])], dims = 1)) %>%
+          select(-(which(names(data1) == 0):which(names(data1) == "90+")))
+
+      } else {
+        ## otherwise, just select out single-age columns (on odd chance someone skips row 1)
+        df <- data1 %>%
+          select(-(which(names(data1) == 0):which(names(data1) == "90+")))
+      }
+
+      ## 2. if custom age group 2 is not NA, calculate and display its data
+      if(!is.na(custom_ages$S[2]) & !is.na(custom_ages$E[2])){
+      
+        A2 <- c(paste0(min(custom_ages$S[2], custom_ages$E[2]), " - ", max(custom_ages$S[2], custom_ages$E[2])))
+        df <- df %>%
+          mutate(
+            !!A2 := rowSums(data1[which(names(data1) == custom_ages$S[2]):
+                                    which(names(data1) == custom_ages$E[2])], dims = 1))
+
+      } 
+      
+      ## 3. if custom age group 3 is not NA, calculate and display its data
+      if(!is.na(custom_ages$S[3]) & !is.na(custom_ages$E[3])){
+
+        A3 <- c(paste0(min(custom_ages$S[3], custom_ages$E[3]), " - ", max(custom_ages$S[3], custom_ages$E[3])))
+        df <- df %>%
+          mutate(
+            !!A3 := rowSums(data1[which(names(data1) == custom_ages$S[3]):
+                                    which(names(data1) == custom_ages$E[3])], dims = 1))
+
+      }
+      
+      ## 4. if custom age group 4 is not NA, calculate and display its data
+      if(!is.na(custom_ages$S[4]) & !is.na(custom_ages$E[4])){
+
+        A4 <- c(paste0(min(custom_ages$S[4], custom_ages$E[4]), " - ", max(custom_ages$S[4], custom_ages$E[4])))
+        df <- df %>%
+          mutate(
+            !!A4 := rowSums(data1[which(names(data1) == custom_ages$S[4]):
+                                    which(names(data1) == custom_ages$E[4])], dims = 1))
+        
+      }
+
+       ## 5. if custom age group 5 is not NA, calculate and display its data
+       if(!is.na(custom_ages$S[5]) & !is.na(custom_ages$E[5])){
+          
+        A5 <- c(paste0(min(custom_ages$S[5], custom_ages$E[5]), " - ", max(custom_ages$S[5], custom_ages$E[5])))
+        df <- df %>%
+          mutate(
+            !!A5 := rowSums(data1[which(names(data1) == custom_ages$S[5]):
+                                    which(names(data1) == custom_ages$E[5])], dims = 1))
+        
+       }
+      
+      ## put Total column at end
+      df <- df %>% mutate(Total2 = Total) %>%
+        select(-Total) %>%
+        rename(Total = Total2)
+      
+    }
+
+    ## C. make selections
+    Reg.Type <- c(input$Region.Type)  ## to be able to use as dynamic name in select
+    df[df$Region.Type == input$Region.Type, ] %>%
+      filter(Region.Name %in% input$Region.Name) %>%
+      filter(Year %in% input$Year) %>%
+      filter(Gender %in% input$Gender) %>%
+      select(Region, !!Reg.Type := Region.Name, everything(), -Region.Type)
+
+  },
+  ## D. table options: https://shiny.rstudio.com/articles/datatables.html
+  options = list(
+    pageLength = 10, ## makes it show only X rows/page; https://datatables.net/reference/option/pageLength
+    lengthMenu = c(10, 20, 25, 50), ## choices of pageLength to display
+    scrollX = TRUE,  ## allows horizontal scrolling; https://datatables.net/reference/option/scrollX
+    #searching = FALSE  ## turns off search ability (but this turns off ALL search: by column AND overall)
+    searchable = FALSE
+    #searchCols = FALSE ## crashes app
+    #searchCols = NULL ## deletes all data rows
+    #dom = 'lrtip'  ## default = 'lfrtip';
+    # l - length changing input control (i.e., Show [ X ] entries)
+    # f - filtering input (i.e., search bar)
+    # t - The table!
+    # i - Table information summary (i.e., Showing X of Y of Z entries)
+    # p - pagination control (i.e., Previous, 1, ..., Next)
+    # r - processing display element (???)
+    #buttons = 'csv'
+  ))
+
+  
+  ## E. Header filters to show what was selected
+  # output$filter1 <- renderUI({
+  #   req(input$Region.Type)
+  #   req(input$Region)
+  #   req(input$Year)
+  #   req(input$Gender)
+  #   HTML("<em>",input$Region.Type,",",input$Region,",",input$Year,",",input$Gender,"</em>")
+  # })
+
+
 }
 
 
 ## Knit together ui and server ----
 shinyApp(ui = ui, server = server)
+
