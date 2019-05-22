@@ -13,14 +13,6 @@
 if (!require('tidyverse')) install.packages('tidyverse')
 if (!require('shiny')) install.packages('shiny')
 if (!require('shinydashboard')) install.packages('shinydashboard')
-#if (!require('rhandsontable')) install.packages('rhandsontable')
-
-
-
-## TO-DOs ----
-## Make Generate Output button be required even when changing options, not just first time.
-## Add 'Reset selection' button.
-
 
 
 ## read data ----
@@ -31,7 +23,7 @@ data5 <- readRDS("data/data5.rds")  ## by 5-year intervals
 ## Define UI for application ----
 
 ui <- shinydashboard::dashboardPage(
-  
+
   ## header ----
   dashboardHeader(title = h4(HTML("Sub-Provincial<br/>Population Estimates")),  ## add break to header
                   titleWidth = 350,
@@ -48,12 +40,7 @@ ui <- shinydashboard::dashboardPage(
 
 
   ## sidebar ----
-  dashboardSidebar(#"dashboardSidebar",
-                   # sidebarMenu(
-                   #   menuItem("menuItem1", tabName = "menuItem1", icon = icon("dashboard")),
-                   #   menuItem("menuItem2", tabName = "menuItem2", icon = icon("th"))
-                   #   )
-                   # ),
+  dashboardSidebar(
     width = 350,
     ## align left side of download button with selectInput menu
     tags$style(HTML(".button1{margin-left: 15px} ")),
@@ -65,20 +52,6 @@ ui <- shinydashboard::dashboardPage(
     uiOutput("Region.Name"),
     uiOutput("Year"),
     uiOutput("Gender"),
-    #uiOutput("Age_Type"),  ## put in body instead
-    
-    # sidebarMenu(
-    #   #menuItem("Dashboard", tabName = "main"),  ## required if use tabItems(tabItem())
-    #   selectInput(inputId = "Region.Type",
-    #               label = "Select a region type:",
-    #               choices = unique(data1$Region.Type),
-    #               selected = "Local Health Area"),  ## end of selectInput
-    #   selectInput(inputId = "Region.Name",
-    #               label = "Select region(s):",
-    #               choices = unique(data1$Region),
-    #               selected = "British Columbia",
-    #               multiple = TRUE)  ## end of selectInput
-    # ),  ## end of sidebarMenu
     br(),br(),
     tags$b("Download as csv:",
            style = "font-size:14px; margin-left:15px; margin-top:10px; margin-bottom:5px; display:block; color:#fff"),
@@ -87,10 +60,7 @@ ui <- shinydashboard::dashboardPage(
 
     
   ## body ----
-  dashboardBody(#"dashboardBody starts here",
-    #br(),br(),
-    # tabItems(
-    #   tabItem(tabName = "menuItem1",
+  dashboardBody(
     fluidRow(#h2("First tab content"),
       box(
           helpText("Select a region type, and then the region(s), year(s) and sex(es) of interest. 
@@ -106,14 +76,9 @@ ui <- shinydashboard::dashboardPage(
           column(width = 3, br(),
                  tags$b("Example:"),
                  tableOutput(outputId = "example_table")
-                 #img(src = "PopEstimatesCustomAgeGroups.sflb.jpg", title = "BC Stats", height = "100px") ## in app\www folder
                  ),  ## end of column
-          ## this is ugly but I don't understand how to get rhandsontable to work
-          #box(
            fluidRow(
              tags$b("Custom Age Types:"),
-                    #),
-            #fluidRow(rHandsontableOutput(outputId = "custom_ages")
              br(),
              column(width = 3,
                        tags$b("From"),
@@ -133,22 +98,15 @@ ui <- shinydashboard::dashboardPage(
                        ) ## end of column (ends)
             ),  ## end of fluidRow
           actionButton(inputId = "goButton", label = "Generate output"),
-          #  solidHeader = TRUE,
-          #  width = 6
-          # ), ## end of box
+          actionButton(inputId = "resetButton", label = "Reset selection"),
           br(),br(),
-          #status = "primary",
-          #solidHeader = TRUE,
-          #collapsible = TRUE,
           width = 12,
-          #title = "Background",
           dataTableOutput(outputId = "table")
           )  ## end of box; boxes need to be put in a row (or column)
       )  ## end of fluidRow
-#     )  ## end of tabItem 1
-#    )  ## end of tabItems
   )  ## end of dashboardBody
 )  ## end of dashboardPage
+
 
 
 
@@ -165,7 +123,6 @@ server <- function(input, output, session) {
     selectInput(inputId = "Region.Type",
                 label = "Select a region type:",
                 choices = unique(data1$Region.Type),
-                #choices = as.character(unique(data1$Region.Type)),
                 selected = "Local Health Area")
   })
 
@@ -190,8 +147,6 @@ server <- function(input, output, session) {
     selectInput(inputId = "Year",
                 label = "Select year(s):",
                 choices = unique(data1$Year),
-                #choices = as.character(unique(data1$Year)),
-                #selected = max(unique(data1$Year)),
                 multiple = TRUE,
                 selectize = FALSE, size = 7)
   })
@@ -220,35 +175,21 @@ server <- function(input, output, session) {
   })
 
 
-  # ## custom age groups with rhandsontable:
-  # 
-  # # http://jrowen.github.io/rhandsontable/
-  # output$custom_ages <- renderRHandsontable({
-  #   ##  create empty dataframe, and add 5 rows
-  #   DF <- data.frame(From = as.numeric(), To = as.numeric(), stringsAsFactors = FALSE)
-  #   for (i in 1:5) {
-  #     DF <- add_row(DF, From = NA, To = NA)
-  #     i = i + 1
-  #   }
-  #   rm(i)
-  #   
-  #   ## convert to rhandsontable
-  #   rhandsontable(DF, digits = 0, stretchH = "all")
-  # })
+  ## reactive resetButton ----
+  observeEvent(input$resetButton, {
+    
+    ## just reload the session
+    session$reload()
+    
+  })
 
 
-  ## data table and download ----
+  ## reactive data table and download ----
   ## Create reactive values for input data to create table and download data
-  data_df <- reactive({
+  data_df <- eventReactive(input$goButton, {
+    ## with input$goButton in eventReactive(), nothing will happen until button clicked
     
-    ## A. req() seems to keep it from running until all options below are chosen
-    req(input$Region.Type)
-    req(input$Region.Name)
-    req(input$Year)
-    req(input$Gender)
-    req(input$goButton)
-    
-    ## B. set df as appropriate dataset depending on age group type chosen
+    ## A. set df as appropriate dataset depending on age group type chosen
     if(input$Age_Type == "Totals") {
       df <- data1 %>% 
         select(Region, Region.Name, Region.Type, Year, Gender, Total)
@@ -347,18 +288,19 @@ server <- function(input, output, session) {
       
     }
     
-    ## C. make selections
+    ## B. make selections
     Reg.Type <- c(input$Region.Type)  ## to be able to use as dynamic name in select
-    tab <- df[df$Region.Type == input$Region.Type, ] %>%
+    df[df$Region.Type == input$Region.Type, ] %>%
       filter(Region.Name %in% input$Region.Name) %>%
       filter(Year %in% input$Year) %>%
       filter(Gender %in% input$Gender) %>%
       select(Region, !!Reg.Type := Region.Name, everything(), -Region.Type)
     
-    ## D. call data_df() in renderDataTable to create table in app
-    ## E. call data_df() in downloadHandler to download data
+    ## C. call data_df() in renderDataTable to create table in app
+    ## D. call data_df() in downloadHandler to download data
   
   })
+  
 
   output$table <- renderDataTable({
     
@@ -366,36 +308,16 @@ server <- function(input, output, session) {
     data_df()
     
     },
-    
     ## table options: https://shiny.rstudio.com/articles/datatables.html
     options = list(
-      pageLength = 10, ## makes it show only X rows/page; https://datatables.net/reference/option/pageLength
+      pageLength = 10,       ## show only X rows/page; https://datatables.net/reference/option/pageLength
       lengthMenu = c(10, 20, 25, 50), ## choices of pageLength to display
-      scrollX = TRUE,  ## allows horizontal scrolling; https://datatables.net/reference/option/scrollX
-      #searching = FALSE  ## turns off search ability (but this turns off ALL search: by column AND overall)
+      scrollX = TRUE,        ## allows horizontal scrolling; https://datatables.net/reference/option/scrollX
       searchable = FALSE
-      #searchCols = FALSE ## crashes app
-      #searchCols = NULL ## deletes all data rows
-      #dom = 'lrtip'  ## default = 'lfrtip';
-      # l - length changing input control (i.e., Show [ X ] entries)
-      # f - filtering input (i.e., search bar)
-      # t - The table!
-      # i - Table information summary (i.e., Showing X of Y of Z entries)
-      # p - pagination control (i.e., Previous, 1, ..., Next)
-      # r - processing display element (???)
-      #buttons = 'csv'
     )
-  )  ## end of renderDataTable()
+  )
 
-  ## Header filters to show what was selected
-  # output$filter1 <- renderUI({
-  #   req(input$Region.Type)
-  #   req(input$Region)
-  #   req(input$Year)
-  #   req(input$Gender)
-  #   HTML("<em>",input$Region.Type,",",input$Region,",",input$Year,",",input$Gender,"</em>")
-  # })
-
+  
   output$download_data <- downloadHandler(
     
     filename = function() {
@@ -405,7 +327,7 @@ server <- function(input, output, session) {
     content = function(file) {
       write.csv(data_df(), file, row.names = FALSE, na = "")  ## col.names = FALSE, append = TRUE, 
     }
-  )  ## end of downloadHandler()
+  )
 
 }
 
