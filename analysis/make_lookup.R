@@ -6,7 +6,7 @@ library(here)
 col_specs <- cols(.default = col_integer(), Region.Type = col_character())
 
 ## read in data
-lookup <- readr::read_csv(here("app","data",paste0("FromR1.csv")), col_names = TRUE, col_specs)
+lookup <- readr::read_csv(here("analysis", "inputs", paste0("FromR1.csv")), col_names = TRUE, col_specs)
 
 ## change Region.Type to names
 lookup <- lookup %>% 
@@ -21,14 +21,14 @@ lookup <- lookup %>%
 
 ## read in REGNAMES_from_Access.csv to match up
 ## REGNAMES_from_Access.csv was created by opening Database work/WorkingFile.accdb and copying REGNAMES into Excel
-REGNAMES <- read_csv(here("analysis", "REGNAMES_from_Access.csv"))
+REGNAMES <- read_csv(here("analysis", "inputs", "REGNAMES_from_Access.csv"))
 
 ## add Region.Names
 lookup <- left_join(lookup, REGNAMES, by = c("Region" = "TYPEID", "Region.Type" = "TYPE"))
 ## NAs are due to fact that REGNAMES has names for only 7 in SR Region.Type
 
 ## save as csv
-write_csv(lookup, here("app","data","lookup.csv"))
+write_csv(lookup, here("analysis", "inputs", "lookup.csv"))
 
 ## clean-up
 rm(col_specs, lookup, REGNAMES)
