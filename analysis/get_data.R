@@ -1,56 +1,83 @@
-## load libraries  ----
-# install.packages("here")
+options(java.parameters = "-Xmx8g" )  ## run BEFORE loading any libraries else can't open huge .xlsx file
+
+### load libraries  ----
+if (!require('here')) install.packages('here')
+if (!require('tidyverse')) install.packages('tidyverse')
+if (!require('xlsx')) install.packages('xlsx')
+
 library(here)
-library(tidyverse)
+library(tidyverse)  ## for: dplyr, readr, ...
+library(xlsx)
 
 
-## get data ----
-# Function to get sub-provincial estimates data
-data.pretty <- function(df, age_var) {
+### get data ----
+## Function to get sub-provincial estimates data
+data.pretty <- function(base_folder, file_name, file_type, mysheet, age_var, data_cols, final_cols) {
 
-  # pre-specify column types
-  col_specs <- cols(.default = col_integer(), Region.Type = col_character())
-  
-  # read in data
-  df <- readr::read_csv(here("analysis","inputs",paste0("FromR",age_var,".csv")), col_names = TRUE, col_specs)
-  
-  # fix age column names and order
-  if(age_var == 5){
+  ## A. if csv file_type, else xlsx file_type
+  if(file_type == "csv"){
     
-    # for 5-year intervals
-    A_cols <- c("85-89","80-84","75-79","70-74","65-69","60-64","55-59","50-54",
-                "45-49","40-44","35-39","30-34","25-29","20-24","15-19","10-14",
-                "5-9","1-4","<1")
-    colnames(df)[which(colnames(df) == "-89"):which(colnames(df) == "0")] <- A_cols
+    ## pre-specify column types
+    #col_specs <- cols(.default = col_integer(), col_RegionType = col_character())
     
-    # FromR5.csv column "-4" includes LT1 (<1 = age=0), so must remove it from 1-4 group
-    df <- df %>% mutate(`1-4` = `1-4` - `<1`)
+    ## read in csv data
+    df <- readr::read_csv(file = paste0(base_folder, file_name, age_var, ".csv"))   #,col_names = TRUE, col_specs)
     
-    # correct the reversed order of age groups
-    df <- df %>% select(Year:"-90", 
-             colnames(df)[which(colnames(df) == "<1"):which(colnames(df) == "85-89")], 
-             gender)
+  } else {
+    
+    ## read in xlsx data
+    df <- xlsx::read.xlsx2(file = paste0(base_folder, file_name, age_var, ".xlsx"),
+                           sheetName = mysheet, stringsAsFactors = FALSE) %>%
+      mutate_at(vars(-c(data_cols[1])), as.numeric)  ## else everything comes in as character class
   }
   
-  # rename Total and 90+ cols
-  colnames(df)[which(colnames(df) == "-999")] <- "Total"
-  colnames(df)[which(colnames(df) == "-90")] <- "90+"
+  ## B. change colnames if needed
+  if(data_cols[1] != final_cols[1]){ df <- rename(df, !!final_cols[1] := !!data_cols[1]) }  ## "Region.Type"
+  if(data_cols[2] != final_cols[2]){ df <- rename(df, !!final_cols[2] := !!data_cols[2]) }  ## "Region"
+  if(data_cols[3] != final_cols[3]){ df <- rename(df, !!final_cols[3] := !!data_cols[3]) }  ## Year
+  if(data_cols[4] != "gender")     { df <- rename(df, gender = !!data_cols[4]) }  ## will capitalize later
+  if(data_cols[5] != final_cols[5]){ df <- rename(df, !!final_cols[5] := !!data_cols[5]) }  ## Total
+
   
-  # create character Gender var and re-arrange columns
-  df <- df %>% mutate(Gender = 
+  ## fix age column names
+  if(age_var == 1){
+    ## remove leading "A" from column names
+    df <- df %>% 
+      rename_at(vars(starts_with("A")), ~ str_replace(.x, pattern = "A", replacement = "")) %>%
+      rename(`90+` = `90PL`)
+  }
+  
+  if(age_var == 5){
+    ## remove leading "A" from column names, and replace "_" with "-"
+    df <- df %>%
+      rename_at(vars(starts_with("A")), ~ str_replace(.x, pattern = "A", replacement = "")) %>%
+      rename_at(vars(contains("_")), ~ str_replace(.x, pattern = "_", replacement = "-")) %>%
+      rename(`<1` = `LT1`, `90+` = `90PL`)
+  }
+
+  ## create character Gender var and re-arrange columns
+  df <- df %>% mutate(Gender =
                         case_when(gender == 1 ~ "M",
                                   gender == 2 ~ "F",
                                   gender == 3 ~ "T")) %>%
-    select(Region, Region.Type, Year, Gender, 
-           colnames(df)[(which(colnames(df) == "90+")+1):(which(colnames(df) == "gender")-1)],
-           -gender, `90+`, Total)
+     select(Region, Region.Type, Year, Gender, 
+            colnames(df)[(which(colnames(df) == "gender")+1):(which(colnames(df) == "90+"))],
+            -gender, Total)
   
-  # open lookup and join in Region.Names
-  lookup <- readr::read_csv(here("analysis","inputs","lookup.csv"), col_names = TRUE, col_types = "dcc")
+  ## if analysis/inputs/lookup.csv does not exist, make it (no longer working b/c data changed)
+  if(!exists(here("analysis", "inputs", "lookup.csv"))){
+    ## requires: "analysis/inputs/REGNAMES_from_Access.csv"
+    ## made manually by opening Database work/WorkingFile.accdb and copying REGNAMES into Excel
+    source(here("analysis", "make_lookup.R"))
+  }
+
+  ## open lookup and join in Region.Names
+  lookup <- readr::read_csv(here("analysis", "inputs", "lookup.csv"),
+                            col_names = TRUE, col_types = "dcc")
   df <- left_join(df, lookup, by = c("Region", "Region.Type")) %>%
     select(Region, Region.Name = NAME, everything())
-  
-  # replace Region.Type abbreviations with names
+
+  ## replace Region.Type abbreviations with names
   df <- df %>% mutate(Region.Type = case_when(
     Region.Type == "CF" ~ "Children and Family Development",
     Region.Type == "DR" ~ "Development Region",
@@ -64,16 +91,20 @@ data.pretty <- function(df, age_var) {
     TRUE ~ as.character(Region.Type)
     )
   )
-  
+
   df <- df %>% filter(!is.na(Region.Name))
-  
-  # save as RDS
-  saveRDS(df, paste0("app/data/data",age_var,".rds"))
-  
-  # return df
+
+  ## save as RDS
+  saveRDS(df, paste0("app/data/data", age_var, ".rds"))
+
+  ## return df
   df
 }
 
-data1 <- data.pretty(data1, 1)  # by single-year intervals
-data5 <- data.pretty(data5, 5)  # by 5-year intervals
+## data1 for single-yr intervals, data5 for 5-yr intervals
+data1 <- data.pretty(base_folder, file_name, file_type, mysheet, age_var = 1, data_cols, final_cols)
+data5 <- data.pretty(base_folder, file_name, file_type, mysheet, age_var = 5, data_cols, final_cols)
 
+
+## clean up ----
+rm(data.pretty, data1, data5)
