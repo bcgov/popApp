@@ -13,6 +13,7 @@
 if (!require('tidyverse')) install.packages('tidyverse')
 if (!require('shiny')) install.packages('shiny')
 if (!require('shinydashboard')) install.packages('shinydashboard')
+if (!require('rsconnect')) install.packages('rsconnect')
 
 
 ## read data ----
