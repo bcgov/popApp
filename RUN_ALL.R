@@ -4,9 +4,11 @@ options(java.parameters = "-Xmx8g" )  ## run BEFORE loading any libraries else c
 ## installs any missing packages this script uses
 if (!require('here')) install.packages('here')
 if (!require('tidyverse')) install.packages('tidyverse')
+if (!require('rsconnect')) install.packages('rsconnect')
 
 library(here)
 library(tidyverse)
+library(rsconnect)  ## to connect to shiny.io dashboard to deploy app
 
 
 ### 2. set values ----
@@ -44,5 +46,14 @@ if(update_data == TRUE) {
   
 }
 
+
+### 4. deploy app ----
+## You need an admin access to the bcstats shiny.io account. Martin can grant you access.
+## Once you have access to shiny.io dashboard, you need to deploy the app:
+## Type deployApp() in console of app.R. If you get an error, you may need to set the app title:
+## In app.R, click the publish button (blue icon), and choose "Publish Application".
+## Type in a title (must be at least 4 characters). Publish.
+
+#rsconnect::deployApp()  ## command to deploy app to shiny.io dashboard; account: bcstats
 
 ### DONE ----
