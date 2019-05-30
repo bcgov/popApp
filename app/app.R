@@ -1,4 +1,4 @@
-# This is a Shiny web application. You can run the application by clicking
+# This is a Shiny web application. You can run the application locally by clicking
 # the 'Run App' button above.
 #
 # Find out more about building applications with Shiny here:
@@ -18,7 +18,7 @@ if (!require('rsconnect')) install.packages('rsconnect')
 
 ## read data ----
 data1 <- readRDS("data/data1.rds")  ## by single-year intervals
-data5 <- readRDS("data/data5.rds")  ## by 5-year intervals
+#data5 <- readRDS("data/data5.rds")  ## by 5-year intervals
 
 
 ## Define UI for application ----
@@ -52,11 +52,12 @@ ui <- shinydashboard::dashboardPage(
     uiOutput("Region.Type"),
     uiOutput("Region.Name"),
     uiOutput("Year"),
-    uiOutput("Gender"),
-    br(),br(),
-    tags$b("Download as csv:",
-           style = "font-size:14px; margin-left:15px; margin-top:10px; margin-bottom:5px; display:block; color:#fff"),
-    downloadButton(outputId = "download_data", label = "Download Data", class = "button1")
+    uiOutput("Gender")
+    ## Moved Download Data button beside other buttons (Generate output, Reset selection)
+    # , br(),br(),
+    # tags$b("Download as csv:",
+    #        style = "font-size:14px; margin-left:15px; margin-top:10px; margin-bottom:5px; display:block; color:#fff"),
+    # downloadButton(outputId = "downloadData", label = "Download data", class = "button1")
   ),  ## end of dashboardSidebar
 
     
@@ -100,6 +101,7 @@ ui <- shinydashboard::dashboardPage(
             ),  ## end of fluidRow
           actionButton(inputId = "goButton", label = "Generate output"),
           actionButton(inputId = "resetButton", label = "Reset selection"),
+          downloadButton(outputId = "downloadData", label = "Download data as csv"),
           br(),br(),
           width = 12,
           dataTableOutput(outputId = "table")
@@ -124,7 +126,9 @@ server <- function(input, output, session) {
     selectInput(inputId = "Region.Type",
                 label = "Select a region type:",
                 choices = unique(data1$Region.Type),
-                selected = "Local Health Area")
+                selected = "Local Health Area"
+                , selectize = FALSE, size = 9    ## forces all 9 options to be shown at once (not drop-down)
+                )
   })
 
   ## select Region(s) within selected Region.Type, multiples OK
@@ -165,7 +169,7 @@ server <- function(input, output, session) {
   output$Age_Type <- renderUI({
     radioButtons(inputId = "Age_Type:",
                  label = "Select type of age group:", 
-                 choices = c("5-year Age Groups", "Totals", "Custom Age Groups"),
+                 choices = c("Single Year Age Groups", "5-year Age Groups", "Totals", "Custom Age Groups"),
                  selected = "Totals")
   })
 
@@ -196,8 +200,34 @@ server <- function(input, output, session) {
         select(Region, Region.Name, Region.Type, Year, Gender, Total)
     }
     
+    if(input$Age_Type == "Single Year Age Groups") {
+      df <- data1
+    }
+    
     if(input$Age_Type == "5-year Age Groups") {
-      df <- data5
+      #df <- data5
+      df <- data1 %>%
+        mutate(`<1` = `0`,
+               `1-4` = `1` + `2` + `3` + `4`,
+               `5-9` = `5` + `6` + `7` + `8` + `9`,
+               `10-14` = `10` + `11` + `12` + `13` + `14`,
+               `15-19` = `15` + `16` + `17` + `18` + `19`,
+               `20-24` = `20` + `21` + `22` + `23` + `24`,
+               `25-29` = `25` + `26` + `27` + `28` + `29`,
+               `30-34` = `30` + `31` + `32` + `33` + `34`,
+               `35-39` = `35` + `36` + `37` + `38` + `49`,
+               `40-44` = `40` + `41` + `42` + `43` + `44`,
+               `45-49` = `45` + `46` + `47` + `48` + `49`,
+               `50-54` = `50` + `51` + `52` + `53` + `54`,
+               `55-59` = `55` + `56` + `57` + `58` + `59`,
+               `60-64` = `60` + `61` + `62` + `63` + `64`,
+               `65-69` = `65` + `66` + `67` + `68` + `69`,
+               `70-74` = `70` + `71` + `72` + `73` + `74`,
+               `75-79` = `75` + `76` + `77` + `78` + `79`,
+               `80-84` = `80` + `81` + `82` + `83` + `84`,
+               `85-89` = `85` + `86` + `87` + `88` + `89`,
+               `90++` = `90+`, Total2 = Total) %>%
+        select(-(which(names(data1) == 0):which(names(data1) == "Total")), `90+` = `90++`, Total = Total2)
     }
     
     if(input$Age_Type == "Custom Age Groups") {
@@ -283,7 +313,8 @@ server <- function(input, output, session) {
       }
       
       ## put Total column at end
-      df <- df %>% mutate(Total2 = Total) %>%
+      df <- df %>% 
+        mutate(Total2 = Total) %>%
         select(-Total) %>%
         rename(Total = Total2)
       
@@ -319,7 +350,7 @@ server <- function(input, output, session) {
   )
 
   
-  output$download_data <- downloadHandler(
+  output$downloadData <- downloadHandler(
     
     filename = function() {
       c("Population_Estimates.csv")
