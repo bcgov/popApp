@@ -226,8 +226,10 @@ server <- function(input, output, session) {
                `75-79` = `75` + `76` + `77` + `78` + `79`,
                `80-84` = `80` + `81` + `82` + `83` + `84`,
                `85-89` = `85` + `86` + `87` + `88` + `89`,
-               `90++` = `90+`, Total2 = Total) %>%
-        select(-(which(names(data1) == 0):which(names(data1) == "Total")), `90+` = `90++`, Total = Total2)
+               `90++` = `90+`, 
+               Total2 = Total) %>%
+        select(-(which(names(data1) == "0"):which(names(data1) == "90+")), `90+` = `90++`, -Total2)
+
     }
     
     if(input$Age_Type == "Custom Age Groups") {

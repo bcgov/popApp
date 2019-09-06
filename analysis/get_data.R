@@ -44,7 +44,7 @@ data.pretty <- function(base_folder, file_name, file_type, mysheet, age_var, dat
     ## remove leading "A" from column names
     df <- df %>% 
       rename_at(vars(starts_with("A")), ~ str_replace(.x, pattern = "A", replacement = "")) %>%
-      rename(`90+` = `90PL`)
+      rename(`90+` = `90PL`, `0` = `LT1`)
   }
   
   if(age_var == 5){
@@ -52,7 +52,7 @@ data.pretty <- function(base_folder, file_name, file_type, mysheet, age_var, dat
     df <- df %>%
       rename_at(vars(starts_with("A")), ~ str_replace(.x, pattern = "A", replacement = "")) %>%
       rename_at(vars(contains("_")), ~ str_replace(.x, pattern = "_", replacement = "-")) %>%
-      rename(`<1` = `LT1`, `90+` = `90PL`)
+      rename(`0` = `LT1`, `90+` = `90PL`)
   }
 
   ## create character Gender var and re-arrange columns
@@ -102,8 +102,8 @@ data.pretty <- function(base_folder, file_name, file_type, mysheet, age_var, dat
 }
 
 ## data1 for single-yr intervals, data5 for 5-yr intervals
-data1 <- data.pretty(base_folder, file_name, file_type, mysheet, age_var = 1, data_cols, final_cols)
-data5 <- data.pretty(base_folder, file_name, file_type, mysheet, age_var = 5, data_cols, final_cols)
+data1 <- data.pretty(base_folder, file_name, file_type, mysheet, age_var <- 1, data_cols, final_cols)
+#data5 <- data.pretty(base_folder, file_name, file_type, mysheet, age_var <- 5, data_cols, final_cols)
 
 
 ## clean up ----
