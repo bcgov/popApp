@@ -29,7 +29,7 @@ ui <- fluidPage(
                a(href="https://www2.gov.bc.ca/gov/content/data/about-data-management/bc-stats",
                  img(src = "bcstats_logo_rev.png", title = "BC Stats", height = "80px")
                ),
-               h4("British Columbia - Population Estimates", style="font-family:Verdana; font-weight:600; font-size:18px; color:white; margin: 5px 5px 0 18px;")
+               h4("British Columbia - Population Estimates", style="font-family:`Noto Sans`; font-weight:400; font-size:18px; color:white; margin: 5px 5px 0 18px;")
              )
            )
             
@@ -39,7 +39,7 @@ ui <- fluidPage(
              sidebarPanel(style="background-color:#F2F2F2",
                tags$em(helpText("This interactive tool allows you to select the region(s), year(s) and sex(es)
                                  of interest for age groupings of your choice.",
-                                style="font-size:14px; margin-left:10px; margin-top:10px; display:block; color:#494949")),
+                                style="font-size:14px; font-family:`Noto Sans`; margin-left:10px; margin-top:10px; display:block; color:#494949")),
                uiOutput("Region.Type"),
                uiOutput("Region.Name"),
                uiOutput("Year"),
@@ -54,7 +54,7 @@ ui <- fluidPage(
                                 would like to specify your own custom age groups, select 'Custom Age Groups' and
                                 enter them in the boxes to the right as seen in the example below. Then click
                                 'Generate output'. You can view the results on screen or download a CSV file.",
-                                 style="font-size:14px; color:#494949"),
+                                 style="font-size:14px; font-family:`Noto Sans`; color:#494949"),
                            column(width = 3, br(),
                                   uiOutput("Age_Type")
                                   ),  ## end of column
@@ -96,15 +96,15 @@ ui <- fluidPage(
     column(width = 12,
            style = "background-color:#003366; border-top:2px solid #fcba19;",
            
-            tags$footer(class="footer", style="font-family:Verdana;",
+            tags$footer(class="footer", style="font-family:`Noto Sans`;",
               tags$div(class="container", style="display:flex; justify-content:center; flex-direction:column; text-align:center; height:46px;",
                 tags$ul(style="display:flex; flex-direction:row; flex-wrap:wrap; margin:0; list-style:none; align-items:center; height:100%;",
-                  tags$li(a(href="https://www2.gov.bc.ca/gov/content/home", "Home", style="font-size:0.813em; font-weight:normal; font-family:Verdana; color:white; padding-left:5px; padding-right:5px; border-right:1px solid #4b5e7e;")),
-                  tags$li(a(href="https://www2.gov.bc.ca/gov/content/home/disclaimer", "Disclaimer", style="font-size:0.813em; font-weight:normal; font-family:Verdana; color:white; padding-left:5px; padding-right:5px; border-right:1px solid #4b5e7e;")),
-                  tags$li(a(href="https://www2.gov.bc.ca/gov/content/home/privacy", "Privacy", style="font-size:0.813em; font-weight:normal; font-family:Verdana; color:white; padding-left:5px; padding-right:5px; border-right:1px solid #4b5e7e;")),
-                  tags$li(a(href="https://www2.gov.bc.ca/gov/content/home/accessibility", "Accessibility", style="font-size:0.813em; font-weight:normal; font-family:Verdana; color:white; padding-left:5px; padding-right:5px; border-right:1px solid #4b5e7e;")),
-                  tags$li(a(href="https://www2.gov.bc.ca/gov/content/home/copyright", "Copyright", style="font-size:0.813em; font-weight:normal; font-family:Verdana; color:white; padding-left:5px; padding-right:5px; border-right:1px solid #4b5e7e;")),
-                  tags$li(a(href="https://www2.gov.bc.ca/StaticWebResources/static/gov3/html/contact-us.html", "Contact", style="font-size:0.813em; font-weight:normal; font-family:Verdana; color:white; padding-left:5px; padding-right:5px; border-right:1px solid #4b5e7e;"))
+                  tags$li(a(href="https://www2.gov.bc.ca/gov/content/home", "Home", style="font-size:1em; font-weight:normal; font-family:`Noto Sans`; color:white; padding-left:5px; padding-right:5px; border-right:1px solid #4b5e7e;")),
+                  tags$li(a(href="https://www2.gov.bc.ca/gov/content/home/disclaimer", "Disclaimer", style="font-size:1em; font-weight:normal; font-family:`Noto Sans`; color:white; padding-left:5px; padding-right:5px; border-right:1px solid #4b5e7e;")),
+                  tags$li(a(href="https://www2.gov.bc.ca/gov/content/home/privacy", "Privacy", style="font-size:1em; font-weight:normal; font-family:`Noto Sans`; color:white; padding-left:5px; padding-right:5px; border-right:1px solid #4b5e7e;")),
+                  tags$li(a(href="https://www2.gov.bc.ca/gov/content/home/accessibility", "Accessibility", style="font-size:1em; font-weight:normal; font-family:`Noto Sans`; color:white; padding-left:5px; padding-right:5px; border-right:1px solid #4b5e7e;")),
+                  tags$li(a(href="https://www2.gov.bc.ca/gov/content/home/copyright", "Copyright", style="font-size:1em; font-weight:normal; font-family:`Noto Sans`; color:white; padding-left:5px; padding-right:5px; border-right:1px solid #4b5e7e;")),
+                  tags$li(a(href="https://www2.gov.bc.ca/StaticWebResources/static/gov3/html/contact-us.html", "Contact", style="font-size:1em; font-weight:normal; font-family:`Noto Sans`; color:white; padding-left:5px; padding-right:5px; border-right:1px solid #4b5e7e;"))
                 )
               )
              )
