@@ -7,6 +7,8 @@
 #
 #   http://rstudio.github.io/shinydashboard/get_started.html
 #
+# To deploy an update, update code and data, then load >library(rsconnect), set working
+# directory to app.R directory and >deployApp(appName = "popApp", appId = 958258)
 
 ## load libraries  ----
 ## installs any missing packages this script uses
