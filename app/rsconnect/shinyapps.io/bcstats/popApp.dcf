@@ -4,9 +4,7 @@ username:
 account: bcstats
 server: shinyapps.io
 hostUrl: https://api.shinyapps.io/v1
-appId: 953159
-bundleId: 2113872
+appId: 958258
+bundleId: 2447668
 url: https://bcstats.shinyapps.io/popApp/
-when: 1559059389.40807
-asMultiple: FALSE
-asStatic: FALSE
+when: 1569514428.76129
