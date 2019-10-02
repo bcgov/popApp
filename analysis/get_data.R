@@ -88,6 +88,7 @@ data.pretty <- function(base_folder, file_name, file_type, mysheet, age_var, dat
     Region.Type == "RD" ~ "Regional District",
     Region.Type == "SD" ~ "School District",
     Region.Type == "SR" ~ "Special Regions (CMAs and Vancouver Island)",
+	Region.Type == "CH" ~ "Community Health Service Area",
     TRUE ~ as.character(Region.Type)
     )
   )
