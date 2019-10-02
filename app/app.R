@@ -31,7 +31,7 @@ ui <- fluidPage(
                a(href="https://www2.gov.bc.ca/gov/content/data/about-data-management/bc-stats",
                  img(src = "bcstats_logo_rev.png", title = "BC Stats", height = "80px")
                ),
-               h4("British Columbia - Population Estimates", style="font-family:`Noto Sans`; font-weight:400; font-size:3vw; color:white; margin: 5px 5px 0 18px;")
+               h4("British Columbia - Population Estimates", style="font-family:`Noto Sans`; font-weight:400; font-size:3vmin; color:white; margin: 5px 5px 0 18px;")
              )
            )
             
