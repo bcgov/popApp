@@ -24,14 +24,26 @@ src: url('BCSans-BoldItalic.woff2') format('woff2'), /* Optimized for very moder
 url('BCSans-BoldItalic.woff') format('woff'); /* Modern Browsers */
 }
 
-@media screen and (min-width: 600px) and (max-width: 899px) {
+@media screen and (min-width: 300px) and (max-width: 499px) {
+  h1 {
+    font-size: 1.0em;
+    visibility: visible;
+  }
+  
+  h2 {
+	font-size: 18px;
+	visibility: visible;
+  }
+}
+
+@media screen and (min-width: 500px) and (max-width: 899px) {
   h1 {
     font-size: calc(9px + 2.2vw);
     visibility: visible;
   }
   
   h2 {
-	font-size: calc(5px + 2.0vw);
+	font-size: calc(11px + 1.5vw);
 	visibility: visible;
   }
 }
