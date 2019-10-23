@@ -1,0 +1,76 @@
+@font-face{
+font-family: BCSans;
+font-style: normal;
+src: url('BCSans-Regular.woff2') format('woff2'), /* Optimized for very modern browsers */ 
+url('BCSans-Regular.woff') format('woff'); /* Modern Browsers */
+}
+@font-face{
+font-family: BCSans;
+font-style: italic;
+src: url('BCSans-Italic.woff2') format('woff2'), /* Optimized for very modern browsers */ 
+url('BCSans-Italic.woff') format('woff'); /* Modern Browsers */
+}
+@font-face{
+font-family: BCSans;
+font-weight: 700;
+src: url('BCSans-Bold.woff2') format('woff2'), /* Optimized for very modern browsers */ 
+url('BCSans-Bold.woff') format('woff'); /* Modern Browsers */
+}
+@font-face{
+font-family: BCSans;
+font-style: italic;
+font-weight: 700;
+src: url('BCSans-BoldItalic.woff2') format('woff2'), /* Optimized for very modern browsers */
+url('BCSans-BoldItalic.woff') format('woff'); /* Modern Browsers */
+}
+
+@media screen and (min-width: 600px) and (max-width: 899px) {
+  h1 {
+    font-size: calc(9px + 2.2vw);
+    visibility: visible;
+  }
+  
+  h2 {
+	font-size: calc(5px + 2.0vw);
+	visibility: visible;
+  }
+}
+
+@media screen and (min-width: 900px) {
+  h1 {
+    font-size: 2.0em;
+    visibility: visible;
+  }
+  
+  h2 {
+	font-size: 1.2em;
+	visibility: visible;
+  }
+}
+
+h2 {
+	font-weight: 700;
+	margin-top: 0.5em;
+	margin-bottom: 0.5em;
+}
+
+h3 {
+	font-size: 18px;
+	visibility: visible;
+	font-weight: 700;
+	margin-top: 0.4em;
+	margin-bottom: 0.4em
+}
+
+h4 {
+	font-size: 14px;
+	visibility: visible;
+	font-weight: 700;
+	margin-top: 0.25em;
+	margin-bottom: 0.25em
+}
+
+html, body, h1, h2, h3, h4, h5, h6 {
+  font-family: BCSans;
+}
+
