@@ -104,8 +104,6 @@ data.pretty <- function(base_folder, file_name, file_type, mysheet, age_var, dat
 
 ## data1 for single-yr intervals, data5 for 5-yr intervals
 data1 <- data.pretty(base_folder, file_name, file_type, mysheet, age_var <- 1, data_cols, final_cols)
-#data5 <- data.pretty(base_folder, file_name, file_type, mysheet, age_var <- 5, data_cols, final_cols)
-
 
 ## clean up ----
-rm(data.pretty, data1, data5)
+rm(data.pretty, data1)

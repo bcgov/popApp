@@ -32,7 +32,8 @@ ui <- fluidPage(title = "BC Population Estimates",
            tags$header(class="header", style="padding:0 0px 0 0px; display:flex; height:80px; width:100%;",
              tags$div(class="banner", style="display:flex; justify-content:flex-start; align-items:center; margin: 0 10px 0 10px",
                a(href="https://www2.gov.bc.ca/gov/content/data/about-data-management/bc-stats",
-                 img(src = "bcstats_logo_rev.png", title = "BC Stats", height = "80px", alt = "British Columbia - BC Stats")
+                 img(src = "bcstats_logo_rev.png", title = "BC Stats", height = "80px", alt = "British Columbia - BC Stats"),
+                 onclick="gtag"
                ),
                h1("British Columbia - Population Estimates", style="font-weight:400; color:white; margin: 5px 5px 0 18px;")
              )
@@ -357,23 +358,6 @@ server <- function(input, output, session) {
     ## D. call data_df() in downloadHandler to download data
 
   })
-
-
-  # output$table <- renderDataTable({
-  # 
-  #   ## call function to create specified data table
-  #   data_df()
-  # 
-  #   },
-  #   ## table options: https://shiny.rstudio.com/articles/datatables.html
-  #   options = list(
-  #     pageLength = 10,       ## show only X rows/page; https://datatables.net/reference/option/pageLength
-  #     lengthMenu = c(10, 20, 25, 50), ## choices of pageLength to display
-  #     scrollX = TRUE,        ## allows horizontal scrolling; https://datatables.net/reference/option/scrollX
-  #     searchable = FALSE,
-  #     filter = FALSE
-  #   )
-  # )
 
   output$table <- DT::renderDataTable(datatable({
     

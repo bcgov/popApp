@@ -54,6 +54,6 @@ if(update_data == TRUE) {
 ## In app.R, click the publish button (blue icon), and choose "Publish Application".
 ## Type in a title (must be at least 4 characters). Publish.
 
-#rsconnect::deployApp()  ## command to deploy app to shiny.io dashboard; account: bcstats
+rsconnect::deployApp(appName = "popApp", appId = 958258)  ## command to deploy app to shiny.io dashboard; account: bcstats
 
 ### DONE ----
