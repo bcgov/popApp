@@ -10,6 +10,11 @@
 # To deploy an update, update code and data, then load >library(rsconnect), set working
 # directory to app.R directory and >deployApp(appName = "popApp", appId = 958258)
 
+#####
+# METADATA for app
+PEOPLEversion <- "PEOPLE 2019"
+updateDate <- "August 2019"
+
 ## load libraries  ----
 ## installs any missing packages this script uses
 if (!require('tidyverse')) install.packages('tidyverse')
@@ -17,7 +22,11 @@ if (!require('shiny')) install.packages('shiny')
 if (!require('shinydashboard')) install.packages('shinydashboard')
 if (!require('rsconnect')) install.packages('rsconnect')
 if (!require('DT')) install.packages('DT')
+if (!require('GAlogger')) devtools::install_github("bnosac/GAlogger")
 
+ga_set_tracking_id("UA-150850915-1")
+ga_set_approval(consent = TRUE)
+ga_collect_pageview(page = "/popApp")
 
 ## read data ----
 data1 <- readRDS("data/data1.rds")  ## by single-year intervals
@@ -38,7 +47,6 @@ ui <- fluidPage(title = "BC Population Estimates",
                h1("British Columbia - Population Estimates", style="font-weight:400; color:white; margin: 5px 5px 0 18px;")
              )
            )
-            
     ),
     column(width=12,
             tags$fieldset(
@@ -62,6 +70,11 @@ ui <- fluidPage(title = "BC Population Estimates",
                  uiOutput("Region.Name"),
                  uiOutput("Year"),
                  uiOutput("Gender")
+               ),
+               br(),
+               tags$fieldset(
+                 tags$legend(h4("Additional information")),
+                 HTML(paste0("Produced by BC Stats ", "<br>", "Data version: ", PEOPLEversion, " <br>", "Last updated: ", updateDate))
                )
              ),
              mainPanel(
@@ -215,20 +228,38 @@ server <- function(input, output, session) {
   })
 
 
-  ## reactive resetButton ----
+  ## reactive resetButton send analytics when reset ----
   observeEvent(input$resetButton, {
-
+    
+    ga_collect_event(event_category = "resetButton", event_label = "Reset", event_action = "Reset application")
+    
     ## just reload the session
     session$reload()
 
   })
 
-
+  ## reactive send analytics when download ----
+  rv <- reactiveValues(download_flag = 0)
+  
+  observeEvent(rv$download_flag, {
+    
+    ga_collect_event(event_category = "downloadButton", event_label = paste0("Download: ", input$Age_Type, ", ", input$Region.Type), event_action = "Download data")
+    
+  }, ignoreInit = TRUE)
+  
+  ## reactive send analytics when query table ----
+  observeEvent(input$goButton, {
+    
+    ga_collect_event(event_category = "goButton", event_label = paste0("Query: ", input$Age_Type, ", ", input$Region.Type), event_action = "Generate data")
+    
+  })
+  
+  
   ## reactive data table and download ----
   ## Create reactive values for input data to create table and download data
   data_df <- eventReactive(input$goButton, {
     ## with input$goButton in eventReactive(), nothing will happen until button clicked
-
+    
     ## A. set df as appropriate dataset depending on age group type chosen
     if(input$Age_Type == "Totals") {
       df <- data1 %>%
@@ -377,13 +408,14 @@ server <- function(input, output, session) {
   )
   
   output$downloadData <- downloadHandler(
-
+    
     filename = function() {
       c("Population_Estimates.csv")
     },
 
     content = function(file) {
       write.csv(data_df(), file, row.names = FALSE, na = "")  ## col.names = FALSE, append = TRUE,
+      rv$download_flag <- rv$download_flag + 1
     }
   )
 
