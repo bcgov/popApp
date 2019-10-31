@@ -74,7 +74,8 @@ ui <- fluidPage(title = "BC Population Estimates",
                br(),
                tags$fieldset(
                  tags$legend(h4("Additional information")),
-                 HTML(paste0("Produced by BC Stats ", "<br>", "Data version: ", dataVersion, " <br>", "Last updated: ", updateDate))
+                 HTML(paste0("All figures are as of July 1st and are corrected for Census undercount.", "<br><br>" , "Produced by BC Stats ", "<br>", "Data version: ", 
+                             dataVersion, " <br>", "Last updated: ", updateDate))
                )
              ),
              mainPanel(
