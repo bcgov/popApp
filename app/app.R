@@ -12,8 +12,8 @@
 
 #####
 # METADATA for app
-PEOPLEversion <- "PEOPLE 2019"
-updateDate <- "August 2019"
+dataVersion <- "Estimates 2018"
+updateDate <- "June 2019"
 
 ## load libraries  ----
 ## installs any missing packages this script uses
@@ -74,7 +74,7 @@ ui <- fluidPage(title = "BC Population Estimates",
                br(),
                tags$fieldset(
                  tags$legend(h4("Additional information")),
-                 HTML(paste0("Produced by BC Stats ", "<br>", "Data version: ", PEOPLEversion, " <br>", "Last updated: ", updateDate))
+                 HTML(paste0("Produced by BC Stats ", "<br>", "Data version: ", dataVersion, " <br>", "Last updated: ", updateDate))
                )
              ),
              mainPanel(
@@ -183,16 +183,24 @@ server <- function(input, output, session) {
   output$Region.Name <- renderUI({
     selectInput(inputId = "Region.Name",
                 label = h4("Select region(s)"),
-                choices = unique(data1$Region.Name[data1$Region.Name == unique(data1$Region.Name)[1]]),
+                choices = NULL,
                 multiple = TRUE,
                 selectize = FALSE, size = 7)
   })
 
   ## update Region.Name choices based on selected Region.Type
   observeEvent(input$Region.Type,{
+    
+    unique_num <- unique(data1$Region[data1$Region.Type == input$Region.Type])
+    unique_name <- unique(data1$Region.Name[data1$Region.Type == input$Region.Type])
+    display_name <- as.list(paste0(unique_num, " - ", unique_name))
+    
+    choices_list <- as.list(unique_name)
+    names(choices_list) <- display_name
+    
     updateSelectInput(session,
                       inputId = "Region.Name",
-                      choices = unique(data1$Region.Name[data1$Region.Type == input$Region.Type]))
+                      choices = choices_list)
   })
 
   ## select Year(s), multiples OK
