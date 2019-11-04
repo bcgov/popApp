@@ -53,7 +53,8 @@ ui <- fluidPage(title = "BC Population Estimates",
                   tags$legend(h2("How to use the population estimates application")),
                   p("Select a region type, and then the region(s), year(s) and gender(s) of interest.
                   Use the Ctrl or Shift key to select multiple entries. Then select whether you'd
-                  like results by single year of age, 5-year age groups, totals or your own custom age groupings. If you
+                  like results by single year of age, 5-year age groups, totals or your own custom age groupings. 
+                  Note that data is available from less than one year old (0) up to 90 years old and over (90). If you
                   would like to specify your own custom age groups, select 'Custom Age Groups' and
                   enter them in the boxes to the right as seen in the example below. Then click
                   'Generate output'. You can view the results on screen or download a CSV file.",
