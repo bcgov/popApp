@@ -10,8 +10,6 @@
 # To deploy an update, update code and data, then load >library(rsconnect), set working
 # directory to app.R directory and >deployApp(appName = "popApp", appId = 958258)
 
-# Test add stuff
-
 #####
 # METADATA for app
 dataVersion <- "Estimates 2018"
