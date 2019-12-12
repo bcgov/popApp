@@ -37,7 +37,7 @@ ui <- fluidPage(title = "BC Population Estimates",
   HTML("<html lang='en'>"),
   fluidRow(
     column(width = 12, 
-           style = "background-color:#003366; border-bottom:2px solid #fcba19;",
+           style = "background-color:#003366; border-bottom:2px solid #fcba19; position:fixed; z-index:10000",
            tags$header(class="header", style="padding:0 0px 0 0px; display:flex; height:80px; width:100%;",
              tags$div(class="banner", style="display:flex; justify-content:flex-start; align-items:center; margin: 0 10px 0 10px",
                a(href="https://www2.gov.bc.ca/gov/content/data/about-data-management/bc-stats",
@@ -50,7 +50,7 @@ ui <- fluidPage(title = "BC Population Estimates",
     ),
     column(width=12,
             tags$fieldset(
-                  tags$legend(h2("How to use the population estimates application")),
+                  tags$legend(h2("How to use the population estimates application", style="margin-top:90px")),
                   p("Select a region type, and then the region(s), year(s) and gender(s) of interest.
                   Use the Ctrl or Shift key to select multiple entries. Then select whether you'd
                   like results by single year of age, 5-year age groups, totals or your own custom age groupings. 
