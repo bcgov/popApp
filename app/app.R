@@ -213,6 +213,16 @@ server <- function(input, output, session) {
                 multiple = TRUE,
                 selectize = FALSE, size = 7)
   })
+  
+  ## update Year(s) choices based on selected Region.Type
+  observeEvent(input$Region.Type,{
+    
+    unique_year <- unique((data1 %>% filter(Region.Type == input$Region.Type))$Year)
+    
+    updateSelectInput(session,
+                      inputId = "Year",
+                      choices = unique_year)
+  })
 
   ## select Sex(es), multiples OK
   output$Gender <- renderUI({

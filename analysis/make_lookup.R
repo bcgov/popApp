@@ -43,10 +43,10 @@ lookup <- df %>%
 
 ## read in REGNAMES_from_Access.csv to match up
 ## REGNAMES_from_Access.csv was created by opening Database work/WorkingFile.accdb and copying REGNAMES into Excel
-REGNAMES <- read_csv(here("analysis", "inputs", "REGNAMES_from_Access.csv"))
+REGNAMES <- read_csv(here("analysis", "inputs", "REGNAMES.csv"))
 
 ## add Region.Names
-lookup <- left_join(lookup, REGNAMES, by = c("Region" = "TYPEID", "Region.Type" = "TYPE"))
+lookup <- left_join(lookup, REGNAMES, by = c("Region" = "Region", "Region.Type" = "Region.Type"))
 ## NAs are due to fact that REGNAMES has names for only 7 in SR Region.Type
 
 ## save as csv
