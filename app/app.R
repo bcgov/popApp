@@ -58,9 +58,14 @@ ui <- fluidPage(title = "BC Population Estimates",
                   would like to specify your own custom age groups, select 'Custom Age Groups' and
                   enter them in the boxes to the right as seen in the example below. Then click
                   'Generate output'. You can view the results on screen or download a CSV file.",
-                  style="font-size:14px; color:#494949"),
-                  br()
-            )
+                  style="font-size:14px; color:#494949")
+            ),
+           tags$fieldset(
+             HTML(paste0("<b>Note:</b> As of January 2020, Local Health Area (LHA) numbering has been updated to reflect the latest version of the 
+                  boundaries released by the Ministry of Health. Translation between old and new LHA identifiers can be downloaded <b>", 
+                  downloadLink(outputId = "downloadTranslation", label = "here"), "</b>."))
+           ),
+           br()
     ),
     column(width = 12,
            sidebarLayout(
@@ -436,6 +441,17 @@ server <- function(input, output, session) {
     content = function(file) {
       write.csv(data_df(), file, row.names = FALSE, na = "")  ## col.names = FALSE, append = TRUE,
       rv$download_flag <- rv$download_flag + 1
+    }
+  )
+  
+  output$downloadTranslation <- downloadHandler(
+    
+    filename = function() {
+      c("lha_translation.csv")
+    },
+    
+    content = function(file) {
+      file.copy("data/lha_translation.csv", file)
     }
   )
 
