@@ -182,7 +182,7 @@ server <- function(input, output, session) {
                 label = h4("Select a region type"),
                 choices = unique(data1$Region.Type),
                 selected = "Local Health Area"
-                , selectize = FALSE, size = 9    ## forces all 9 options to be shown at once (not drop-down)
+                , selectize = FALSE, size = 10    ## forces all 9 options to be shown at once (not drop-down)
                 )
   })
 
