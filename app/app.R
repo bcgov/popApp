@@ -13,7 +13,6 @@
 #####
 # METADATA for app
 dataVersion <- "Estimates 2018"
-updateDate <- "January 2020"
 
 ## load libraries  ----
 ## installs any missing packages this script uses
@@ -81,7 +80,7 @@ ui <- fluidPage(title = "BC Population Estimates",
                tags$fieldset(
                  tags$legend(h4("Additional information")),
                  HTML(paste0("All figures are as of July 1 and are adjusted for census net undercoverage (including adjustment for incompletely enumerated Indian Reserves).", "<br><br>" , "Produced by BC Stats ", "<br>", "Data version: ", 
-                             dataVersion, " <br>", "Last updated: ", updateDate))
+                             dataVersion))
                )
              ),
              mainPanel(
