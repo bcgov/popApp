@@ -57,13 +57,11 @@ ui <- fluidPage(title = "BC Population Estimates",
                   would like to specify your own custom age groups, select 'Custom Age Groups' and
                   enter them in the boxes to the right as seen in the example below. Then click
                   'Generate output'. You can view the results on screen or download a CSV file.",
-                  style="font-size:14px; color:#494949")
+                  style="font-size:14px; color:#494949"),
+                  HTML(paste0("<p>Don't see what you need? See our Custom Population Products 
+                              <b><a href='https://www2.gov.bc.ca/gov/content/data/about-data-management/bc-stats/custom-products-services/custom-population-products'>page</a></b>
+                              for more information.</p>"))
             ),
-           tags$fieldset(
-             HTML(paste0("<b>Note:</b> As of January 2020, Local Health Area (LHA) numbering has been updated to reflect the latest version of the 
-                  boundaries released by the Ministry of Health. Translation between old and new LHA identifiers can be downloaded <b>", 
-                  downloadLink(outputId = "downloadTranslation", label = "here"), "</b>."))
-           ),
            br()
     ),
     column(width = 12,
@@ -79,7 +77,7 @@ ui <- fluidPage(title = "BC Population Estimates",
                br(),
                tags$fieldset(
                  tags$legend(h4("Additional information")),
-                 HTML(paste0("All figures are as of July 1 and are adjusted for census net undercoverage (including adjustment for incompletely enumerated Indian Reserves).", "<br><br>" , "Produced by BC Stats ", "<br>", "Data version: ", 
+                 HTML(paste0("Produced by BC Stats ", "<br>", "Data version: ", 
                              dataVersion))
                )
              ),
@@ -144,7 +142,15 @@ ui <- fluidPage(title = "BC Population Estimates",
                  ),
                  br(),br(),
                  DTOutput("table"),
-                 br()
+                 br(),
+                 tags$fieldset(
+                 tags$legend(h3("Notes")),
+                 HTML(paste0("<ul><li>All figures are as of July 1 and are adjusted for census net undercoverage (including adjustment for incompletely enumerated Indian Reserves).</li>",
+                 "<li>As of January 2020, Local Health Area (LHA) numbering has been updated to reflect the latest version of the boundaries released by the Ministry of Health. Translation between old and new LHA identifiers can be downloaded <b>", 
+                  downloadLink(outputId = "downloadTranslation", label = "here"), "</b>.</li>",
+                 "<li>Data obtained through this application is distributed under the ", 
+                 "<b><a href='https://www2.gov.bc.ca/gov/content/data/open-data/open-government-licence-bc'>Open Government License</a></b>.</li></ul><br>"))
+               )
              )
            )
     ),
