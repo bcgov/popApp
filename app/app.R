@@ -12,7 +12,7 @@
 
 #####
 # METADATA for app
-dataVersion <- "Estimates 2018"
+dataVersion <- "Estimates 2019"
 
 ## load libraries  ----
 ## installs any missing packages this script uses
