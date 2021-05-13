@@ -4,7 +4,6 @@
 # Find out more about building applications with Shiny here:
 #
 #   http://shiny.rstudio.com/
-#
 #   http://rstudio.github.io/shinydashboard/get_started.html
 #
 # To deploy an update:
@@ -12,10 +11,14 @@
 #   2. load library(rsconnect)
 #   3. set working directory to app.R directory (setwd("I:/PEOPLEPROJECTIONS/00 - R_code/shiny_apps/Production/popApp/app"))
 #   4. deployApp(appName = "popApp", appId = 958258)
+# URL: https://bcstats.shinyapps.io/popApp/
 
-#####
-# METADATA for app
+## metadata for app ----
 dataVersion <- "Estimates 2020"
+methodsLink <- "<a href='https://www2.gov.bc.ca/gov/content/data/statistics/people-population-community/population/population-estimates/about-population-estimates'>here</a>"
+methodsPDF <- "<a href='https://www2.gov.bc.ca/assets/gov/data/statistics/people-population-community/population/pop_census_2016_highlights_population_dwellings.pdf'>2016 Census: Population and Dwelling Counts</a>"
+githubLink <- "<a href='https://github.com/bcgov/popApp'>https://github.com/bcgov/popApp</a>"
+
 
 ## load libraries  ----
 ## installs any missing packages this script uses
@@ -26,6 +29,7 @@ if (!require('rsconnect')) install.packages('rsconnect')
 if (!require('DT')) install.packages('DT')
 if (!require('GAlogger')) devtools::install_github("bnosac/GAlogger")
 
+## Google Analytics ----
 ga_set_tracking_id("UA-150850915-1")
 ga_set_approval(consent = TRUE)
 ga_collect_pageview(page = "/popApp")
@@ -33,6 +37,7 @@ ga_collect_pageview(page = "/popApp")
 ## read data ----
 data1 <- readRDS("data/data1.rds")  ## by single-year intervals
 
+## Define ui layout ----
 # UI demonstrating column layouts
 ui <- fluidPage(title = "BC Population Estimates",
   theme = "bootstrap.css",
@@ -63,7 +68,9 @@ ui <- fluidPage(title = "BC Population Estimates",
                   style="font-size:14px; color:#494949"),
                   HTML(paste0("<p>Don't see what you need? See our Custom Population Products 
                               <b><a href='https://www2.gov.bc.ca/gov/content/data/about-data-management/bc-stats/custom-products-services/custom-population-products'>page</a></b>
-                              for more information.</p>"))
+                              for more information.</p>")),
+                  HTML(paste0("<p>Methods documentation is available <b>", methodsLink,
+                  "</b> and in this PDF: <b>", methodsPDF, "</b>.</p>"))
             ),
            br()
     ),
@@ -148,11 +155,17 @@ ui <- fluidPage(title = "BC Population Estimates",
                  br(),
                  tags$fieldset(
                  tags$legend(h3("Notes")),
-                 HTML(paste0("<ul><li>All figures are as of July 1 and are adjusted for census net undercoverage (including adjustment for incompletely enumerated Indian Reserves).</li>",
-                 "<li>As of January 2020, Local Health Area (LHA) numbering has been updated to reflect the latest version of the boundaries released by the Ministry of Health. Translation between old and new LHA identifiers can be downloaded <b>", 
-                  downloadLink(outputId = "downloadTranslation", label = "here"), "</b>.</li>",
-                 "<li>Data obtained through this application is distributed under the ", 
-                 "<b><a href='https://www2.gov.bc.ca/gov/content/data/open-data/open-government-licence-bc'>Open Government License</a></b>.</li></ul><br>"))
+                 HTML(paste0("<ul><li>All figures are as of July 1 and are adjusted for census net 
+                             undercoverage (including adjustment for incompletely enumerated Indian Reserves).</li>",
+                             "<li>As of January 2020, Local Health Area (LHA) numbering has been 
+                             updated to reflect the latest version of the boundaries released by 
+                             the Ministry of Health. Translation between old and new LHA identifiers 
+                             can be downloaded <b>", 
+                             downloadLink(outputId = "downloadTranslation", label = "here"), "</b>.</li>",
+                             "<li>Data obtained through this application is distributed under the ", 
+                             "<b><a href='https://www2.gov.bc.ca/gov/content/data/open-data/open-government-licence-bc'>Open Government License</a></b>.</li>",
+                             "<li>The GitHub repo for this app is: <b>", githubLink, "</b>.</li>",
+                             "</ul><br>"))
                )
              )
            )
@@ -189,8 +202,8 @@ server <- function(input, output, session) {
     selectInput(inputId = "Region.Type",
                 label = h4("Select a region type"),
                 choices = unique(data1$Region.Type),
-                selected = "Local Health Area"
-                , selectize = FALSE, size = 10    ## forces all 10 options to be shown at once (not drop-down)
+                selected = "Local Health Area", 
+                selectize = FALSE, size = 10    ## forces all 10 options to be shown at once (not drop-down)
                 )
   })
 
@@ -215,7 +228,9 @@ server <- function(input, output, session) {
     
     updateSelectInput(session,
                       inputId = "Region.Name",
-                      choices = choices_list)
+                      choices = choices_list,
+                      selected = "British Columbia"  ## default selection: BC
+                      )
   })
 
   ## select Year(s), multiples OK
@@ -230,11 +245,15 @@ server <- function(input, output, session) {
   ## update Year(s) choices based on selected Region.Type
   observeEvent(input$Region.Type,{
     
-    unique_year <- unique((data1 %>% filter(Region.Type == input$Region.Type))$Year)
+    unique_year <- #sort(
+      unique((data1 %>% filter(Region.Type == input$Region.Type))$Year) 
+                        #, decreasing = TRUE)
     
     updateSelectInput(session,
                       inputId = "Year",
-                      choices = unique_year)
+                      choices = unique_year,
+                      selected = max(data1$Year)  ## default selection: max year
+                      )
   })
 
   ## select Sex(es), multiples OK
@@ -242,6 +261,7 @@ server <- function(input, output, session) {
     selectInput(inputId = "Gender",
                 label = h4("Select gender(s)"),
                 choices = c("Males" = "M", "Females" = "F", "Totals" = "T"),
+                selected = "T",  ## default selection: Totals
                 multiple = TRUE,
                 selectize = FALSE, size = 3) ## QQ: Is 4 a minimum? It's ignoring size=3
   })
@@ -295,8 +315,7 @@ server <- function(input, output, session) {
     
     ## A. set df as appropriate dataset depending on age group type chosen
     if(input$Age_Type == "Totals") {
-      df <- data1 %>%
-        select(Region, Region.Name, Region.Type, Year, Gender, Total)
+      df <- data1 %>% select(Region, Region.Name, Region.Type, Year, Gender, Total)
     }
 
     if(input$Age_Type == "Single Year Age Groups") {
@@ -304,7 +323,6 @@ server <- function(input, output, session) {
     }
 
     if(input$Age_Type == "5-year Age Groups") {
-      #df <- data5
       df <- data1 %>%
         mutate(`LT1` = `0`,
                `1-4` = `1` + `2` + `3` + `4`,
@@ -425,8 +443,8 @@ server <- function(input, output, session) {
 
   output$table <- DT::renderDataTable(datatable({
     
-      ## call function to create specified data table
-      data_df()
+    ## call function to create specified data table
+    data_df()
       
     },
     filter="none",
