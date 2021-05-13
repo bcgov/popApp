@@ -65,7 +65,7 @@ data.pretty <- function(base_folder, file_name, file_type, mysheet, age_var, dat
             -gender, Total)
   
   ## if analysis/inputs/lookup.csv does not exist, make it (no longer working b/c data changed)
-  if(!exists(here("analysis", "inputs", "lookup.csv"))){
+  if(!file.exists(here("analysis", "inputs", "lookup.csv"))){
     ## requires: "analysis/inputs/REGNAMES_from_Access.csv"
     ## made manually by opening Database work/WorkingFile.accdb and copying REGNAMES into Excel
     source(here("analysis", "make_lookup.R"))
@@ -97,7 +97,10 @@ data.pretty <- function(base_folder, file_name, file_type, mysheet, age_var, dat
 
   ## save as RDS
   saveRDS(df, paste0("app/data/data", age_var, ".rds"))
-
+  
+  ## save again in Archive folder with date
+  saveRDS(df, paste0("app/data/Archive/data", age_var, "_", Sys.Date(), ".rds"))
+  
   ## return df
   df
 }
