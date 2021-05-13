@@ -206,7 +206,7 @@ server <- function(input, output, session) {
     selectInput(inputId = "Region.Type",
                 label = h4("Select a region type"),
                 choices = unique(data1$Region.Type),
-                selected = "Local Health Area", 
+                selected = initVals[1],  ## "Local Health Area",   ## default selection: LHA
                 selectize = FALSE, size = 10    ## forces all 10 options to be shown at once (not drop-down)
                 )
   })
@@ -233,7 +233,7 @@ server <- function(input, output, session) {
     updateSelectInput(session,
                       inputId = "Region.Name",
                       choices = choices_list,
-                      selected = "British Columbia"  ## default selection: BC
+                      selected = initVals[2]  ## "British Columbia"  ## default selection: BC
                       )
   })
 
@@ -256,7 +256,7 @@ server <- function(input, output, session) {
     updateSelectInput(session,
                       inputId = "Year",
                       choices = unique_year,
-                      selected = max(data1$Year)  ## default selection: max year
+                      selected = initVals[3]  ## max(data1$Year)  ## default selection: max year
                       )
   })
 
@@ -265,7 +265,7 @@ server <- function(input, output, session) {
     selectInput(inputId = "Gender",
                 label = h4("Select gender(s)"),
                 choices = c("Males" = "M", "Females" = "F", "Totals" = "T"),
-                selected = "T",  ## default selection: Totals
+                selected = initVals[4],  ## "T",  ## default selection: Totals
                 multiple = TRUE,
                 selectize = FALSE, size = 3) ## QQ: Is 4 a minimum? It's ignoring size=3
   })
