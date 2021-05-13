@@ -7,12 +7,15 @@
 #
 #   http://rstudio.github.io/shinydashboard/get_started.html
 #
-# To deploy an update, update code and data, then load >library(rsconnect), set working
-# directory to app.R directory and >deployApp(appName = "popApp", appId = 958258)
+# To deploy an update:
+#   1. update code and data, and !! likely dataVersion !!
+#   2. load library(rsconnect)
+#   3. set working directory to app.R directory (setwd("I:/PEOPLEPROJECTIONS/00 - R_code/shiny_apps/Production/popApp/app"))
+#   4. deployApp(appName = "popApp", appId = 958258)
 
 #####
 # METADATA for app
-dataVersion <- "Estimates 2019"
+dataVersion <- "Estimates 2020"
 
 ## load libraries  ----
 ## installs any missing packages this script uses
