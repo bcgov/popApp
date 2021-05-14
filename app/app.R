@@ -2,7 +2,6 @@
 # the 'Run App' button above.
 #
 # Find out more about building applications with Shiny here:
-#
 #   http://shiny.rstudio.com/
 #   http://rstudio.github.io/shinydashboard/get_started.html
 #
@@ -11,14 +10,14 @@
 #   2. load library(rsconnect)
 #   3. set working directory to app.R directory (setwd("I:/PEOPLEPROJECTIONS/00 - R_code/shiny_apps/Production/popApp/app"))
 #   4. deployApp(appName = "popApp", appId = 958258)
-# URL: https://bcstats.shinyapps.io/popApp/
+# 
+# https://bcstats.shinyapps.io/popApp/
 
 ## metadata for app ----
 dataVersion <- "Estimates 2020"
 methodsLink <- "<a href='https://www2.gov.bc.ca/gov/content/data/statistics/people-population-community/population/population-estimates/about-population-estimates'>here</a>"
 methodsPDF <- "<a href='https://www2.gov.bc.ca/assets/gov/data/statistics/people-population-community/population/pop_census_2016_highlights_population_dwellings.pdf'>2016 Census: Population and Dwelling Counts</a>"
 githubLink <- "<a href='https://github.com/bcgov/popApp'>https://github.com/bcgov/popApp</a>"
-
 
 ## load libraries  ----
 ## installs any missing packages this script uses
@@ -37,8 +36,7 @@ ga_collect_pageview(page = "/popApp")
 ## read data ----
 data1 <- readRDS("data/data1.rds")  ## by single-year intervals
 
-initVals <- c("Local Health Area", "British Columbia", max(data1$Year), "T") ## c(Region.Type, Region.Name, Year, Gender)
-
+initVals <- c("Local Health Area", "British Columbia", max(data1$Year), "M", "F", "T") ## c(Region.Type, Region.Name, Year, Gender)
 
 ## Define ui layout ----
 # UI demonstrating column layouts
@@ -206,7 +204,7 @@ server <- function(input, output, session) {
     selectInput(inputId = "Region.Type",
                 label = h4("Select a region type"),
                 choices = unique(data1$Region.Type),
-                selected = initVals[1],  ## "Local Health Area",   ## default selection: LHA
+                selected = initVals[1],         ## default selection: "Local Health Area"
                 selectize = FALSE, size = 10    ## forces all 10 options to be shown at once (not drop-down)
                 )
   })
@@ -233,7 +231,7 @@ server <- function(input, output, session) {
     updateSelectInput(session,
                       inputId = "Region.Name",
                       choices = choices_list,
-                      selected = initVals[2]  ## "British Columbia"  ## default selection: BC
+                      selected = initVals[2]  ## default selection: "British Columbia"
                       )
   })
 
@@ -256,7 +254,7 @@ server <- function(input, output, session) {
     updateSelectInput(session,
                       inputId = "Year",
                       choices = unique_year,
-                      selected = initVals[3]  ## max(data1$Year)  ## default selection: max year
+                      selected = initVals[3]  ## default selection: max year
                       )
   })
 
@@ -265,7 +263,7 @@ server <- function(input, output, session) {
     selectInput(inputId = "Gender",
                 label = h4("Select gender(s)"),
                 choices = c("Males" = "M", "Females" = "F", "Totals" = "T"),
-                selected = initVals[4],  ## "T",  ## default selection: Totals
+                selected = initVals[-(1:3)],  ## default selection: all ("M"ales, "F"emales, "T"otals)
                 multiple = TRUE,
                 selectize = FALSE, size = 3) ## QQ: Is 4 a minimum? It's ignoring size=3
   })
@@ -284,7 +282,6 @@ server <- function(input, output, session) {
            nrow = 4, ncol = 2, byrow = TRUE, dimnames = list(c(1:4), c("From", "To")))
   })
 
-
   ## initial table with default selections ----
   
   ## initVals <- c(Region.Type, Region.Name, Year, Gender)
@@ -293,7 +290,7 @@ server <- function(input, output, session) {
     data1[data1$Region.Type == initVals[1], ] %>%
       filter(Region.Name == initVals[2]) %>%
       filter(Year == initVals[3]) %>%
-      filter(Gender == initVals[4]) %>%
+      # filter(Gender == initVals[4]) %>%
       select(Region, !!initVals[1] := Region.Name, Year, Gender, Total)
   }
   
@@ -317,8 +314,7 @@ server <- function(input, output, session) {
     pageLength = 10,       ## show only X rows/page; https://datatables.net/reference/option/pageLength
     lengthMenu = c(10, 20, 25, 50), ## choices of pageLength to display
     scrollX = TRUE,        ## allows horizontal scrolling; https://datatables.net/reference/option/scrollX
-    dom ="ltpi"
-  )
+    dom ="ltpi")
   )
   )
   
@@ -327,7 +323,9 @@ server <- function(input, output, session) {
   ## reactive resetButton send analytics when reset ----
   observeEvent(input$resetButton, {
     
-    ga_collect_event(event_category = "resetButton", event_label = "Reset", event_action = "Reset application")
+    ga_collect_event(event_category = "resetButton", 
+                     event_label = "Reset", 
+                     event_action = "Reset application")
     
     ## just reload the session
     session$reload()
@@ -339,25 +337,29 @@ server <- function(input, output, session) {
   
   observeEvent(rv$download_flag, {
     
-    ga_collect_event(event_category = "downloadButton", event_label = paste0("Download: ", input$Age_Type, ", ", input$Region.Type), event_action = "Download data")
+    ga_collect_event(event_category = "downloadButton", 
+                     event_label = paste0("Download: ", input$Age_Type, ", ", input$Region.Type), 
+                     event_action = "Download data")
     
   }, ignoreInit = TRUE)
   
   ## reactive send analytics when query table ----
   observeEvent(input$goButton, {
     
-    ga_collect_event(event_category = "goButton", event_label = paste0("Query: ", input$Age_Type, ", ", input$Region.Type), event_action = "Generate data")
+    ga_collect_event(event_category = "goButton", 
+                     event_label = paste0("Query: ", input$Age_Type, ", ", input$Region.Type), 
+                     event_action = "Generate data")
     
   })
 
 
   ## reactive data table and download ----
-  ## Create reactive values for input data to create table and download data
+  ## create reactive values for input data to create table and download data
   data_df <- eventReactive(input$goButton, {
     
-    showDefaultTable(FALSE)  ## now hide initial default table
-    
     ## with input$goButton in eventReactive(), nothing will happen until button clicked
+    
+    showDefaultTable(FALSE)  ## now hide initial default table
     
     ## A. set df as appropriate dataset depending on age group type chosen
     if(input$Age_Type == "Totals") {
