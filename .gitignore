@@ -10,3 +10,5 @@
 *.csv
 /app/data/*
 /sandbox/*
+NOTES.txt
+/app/TEST_versions/*
