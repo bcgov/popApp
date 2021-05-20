@@ -10,5 +10,6 @@
 *.csv
 /app/data/*
 /sandbox/*
+/app/rsconnect/*
 NOTES.txt
 /app/TEST_versions/*
