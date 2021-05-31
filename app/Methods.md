@@ -8,7 +8,6 @@ Methods documentation is available **<a href='https://www2.gov.bc.ca/gov/content
 BC Stats' Population website is: **<a href='https://www2.gov.bc.ca/gov/content/data/statistics/people-population-community/population'>https://www2.gov.bc.ca/gov/content/data/statistics/people-population-community/population/</a>**. Information is broken down by: **<a href='https://www2.gov.bc.ca/gov/content/data/statistics/people-population-community/population/population-estimates'>Population Estimates</a>**, **<a href='https://www2.gov.bc.ca/gov/content/data/statistics/people-population-community/population/population-projections'>Population Projections</a>**, and **<a href='https://www2.gov.bc.ca/gov/content/data/statistics/people-population-community/population/household-projections'>Household Projections</a>**.
 <br><br>
 
-
 ### Open Licence
 
 Data obtained through this application is distributed under the **<a href='https://www2.gov.bc.ca/gov/content/data/open-data/open-government-licence-bc'>Open Government License</a>**.
