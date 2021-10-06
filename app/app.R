@@ -5,18 +5,28 @@
 #   http://shiny.rstudio.com/
 #   http://rstudio.github.io/shinydashboard/get_started.html
 #
+# To test before deployment: click Run App at top of Script window 
+#   (or type shiny::runApp('app.R') in console)
+# 
 # To deploy an update:
-#   1. update code and data, and !! likely dataVersion !!
+#   1. update code and data, and !! likely dataVersion_Xxx(s) and switch_year !!
 #   2. load library(rsconnect)
 #   3. set working directory to app.R directory (setwd("I:/PEOPLEPROJECTIONS/00 - R_code/shiny_apps/Production/popApp/app"))
+#      (Or, in Files pane, in app folder, click on "More", then "Set As Working Directory")
 #   4. deployApp(appName = "popApp", appId = 958258)
+#      (Or, click on shiny icon (blue eye) at top right of Script window, "Manage Accounts" to log into shinyapps.io)
 # 
-# https://bcstats.shinyapps.io/popApp/
+# https://bcstats.shinyapps.io/popProjApp/
 
 ## metadata for app ----
-dataVersion <- "Estimates 2020"
+dataVersion_Est <- "March 2021"       ## date of work done on data1.rds for Estimates
+dataVersion_Proj <- "September 2021"  ## date of work done on data1.rds for Projections
+Proj_Years <- "2021-2041"             ## years of Projections data
+switch_year <- 2020                   ## year Estimates runs to (and includes)
+switch_wording <- "Estimates above, Projections below"  ## text in Years selection AFTER swicth-year
 
-## load libraries ----
+
+## load libraries  ----
 ## installs any missing packages this script uses
 if (!require('tidyverse')) install.packages('tidyverse')
 if (!require('shiny')) install.packages('shiny')
@@ -27,9 +37,9 @@ if (!require('GAlogger')) devtools::install_github("bnosac/GAlogger")
 if (!require('markdown')) install.packages('markdown')
 
 ## Google Analytics ----
-ga_set_tracking_id("UA-150850915-1")
-ga_set_approval(consent = TRUE)
-ga_collect_pageview(page = "/popApp")
+GAlogger::ga_set_tracking_id("UA-150850915-1")
+GAlogger::ga_set_approval(consent = TRUE)
+GAlogger::ga_collect_pageview(page = "/popApp")
 
 ## read data ----
 data1 <- readRDS("data/data1.rds")  ## by single-year intervals
@@ -38,7 +48,7 @@ initVals <- c("Local Health Area", "British Columbia", max(data1$Year), "M", "F"
 
 ## Define ui layout ----
 # UI demonstrating column layouts
-ui <- fluidPage(title = "BC Population Estimates",
+ui <- fluidPage(title = "BC Population Estimates & Projections",
   theme = "bootstrap.css",
   HTML("<html lang='en'>"),
   fluidRow(
@@ -50,7 +60,7 @@ ui <- fluidPage(title = "BC Population Estimates",
                  img(src = "bcstats_logo_rev.png", title = "BC Stats", height = "80px", alt = "British Columbia - BC Stats"),
                  onclick="gtag"
                ),
-               h1("British Columbia - Population Estimates", style="font-weight:400; color:white; margin: 5px 5px 0 18px;")
+               h1("British Columbia - Population Estimates & Projections", style="font-weight:400; color:white; margin: 5px 5px 0 18px;")
              )
            )
     ),
@@ -61,161 +71,171 @@ ui <- fluidPage(title = "BC Population Estimates",
            tabsetPanel(
              id = "tabs",
              
-             ## Main tab ----
-             tabPanel(title = "Main",
-                      tags$head(tags$style(type='text/css', ".nav-tabs {font-size: 20px} ")),
-                      
-                      sidebarLayout(
-                        sidebarPanel(style = "background-color:#F2F2F2;",
-                                     tags$fieldset(
-                                       tags$legend(h3("Step 1: Select data")),
-                                       HTML("Use the Ctrl or Shift key to select multiple entries."),
-                                       br(),br(),
-                                       uiOutput("Region.Type"),
-                                       uiOutput("Region.Name"),
-                                       uiOutput("Year"),
-                                       uiOutput("Gender")
-                                     ),
-                                     br(),
-                                     tags$fieldset(
-                                       HTML(paste0("Produced by BC Stats ", "<br>", "Data version: ", 
-                                                   dataVersion))
-                                     )
-                        ),  ## end of sidebarPanel
-                        
-                        mainPanel(
-                          ## Age selection ----
-                          tags$fieldset(style = "margin-top:20px;",
-                                        tags$legend(h3("Step 2: Select age format")),
-                                        column(width = 12,
-                                               column(width = 3,
-                                                      tags$fieldset(tags$legend(h4("Select type of age group")),
-                                                                    uiOutput("Age_Type"))
-                                               ),  ## end of column
-                                               ## Conditional panels: only show if "custom" age type is selected
-                                               # https://shiny.rstudio.com/reference/shiny/1.0.5/conditionalPanel.html
-                                               column(width = 3, 
-                                                      conditionalPanel(
-                                                        condition = "input.Age_Type == 'custom'",
-                                                        tags$fieldset(tags$legend(h4("Custom age groups example"))),
-                                                        tableOutput(outputId = "example_table"))
-                                               ),  ## end of column
-                                               column(width = 6,
-                                                      conditionalPanel(
-                                                        condition = "input.Age_Type == 'custom'",
-                                                        tags$fieldset(tags$legend(h4("Custom age groups")),
-                                                                      br(),
-                                                                      column(width = 6,
-                                                                             numericInput(inputId = "start1", 
-                                                                                          label = "From - 1st", 
-                                                                                          value = NA, 
-                                                                                          min = 0, max = 99)),
-                                                                      column(width = 6,
-                                                                             numericInput(inputId = "end1", 
-                                                                                          label = "To - 1st", 
-                                                                                          value = NA, 
-                                                                                          min = 0, max = 99)), 
-                                                                      column(width = 6,
-                                                                             numericInput(inputId = "start2", 
-                                                                                          label = "From - 2nd", 
-                                                                                          value = NA, 
-                                                                                          min = 0, max = 99)), 
-                                                                      column(width = 6,
-                                                                             numericInput(inputId = "end2", 
-                                                                                          label = "To - 2nd", 
-                                                                                          value = NA, 
-                                                                                          min = 0, max = 99)), 
-                                                                      column(width = 6,
-                                                                             numericInput(inputId = "start3", 
-                                                                                          label = "From - 3rd", 
-                                                                                          value = NA, 
-                                                                                          min = 0, max = 99)), 
-                                                                      column(width = 6,
-                                                                             numericInput(inputId = "end3", 
-                                                                                          label = "To - 3rd", 
-                                                                                          value = NA, 
-                                                                                          min = 0, max = 99)), 
-                                                                      column(width = 6,
-                                                                             numericInput(inputId = "start4", 
-                                                                                          label = "From - 4th", 
-                                                                                          value = NA, 
-                                                                                          min = 0, max = 99)),
-                                                                      column(width = 6,
-                                                                             numericInput(inputId = "end4", 
-                                                                                          label = "To - 4th", 
-                                                                                          value = NA, 
-                                                                                          min = 0, max = 99))
-                                                        )  ## end of tags$fieldset
-                                                      )  ## end of conditionalPanel
-                                               )
-                                        )
-                          ),  ## end of tags$fieldset (Age selection)
-                          ## Actions and table ----
-                          br(),
-                          tags$fieldset(
-                            tags$legend(h3("Step 3: Action")),
-                            column(width = 12,
-                                   actionButton(inputId = "goButton", label = "Generate output"),
-                                   actionButton(inputId = "resetButton", label = "Reset selection"),
-                                   downloadButton(outputId = "downloadData", label = "Download data as csv")
-                            )
-                          ),
-                          br(),br(),
-                          DTOutput("default_table"),  ## only shows until "Generate Output" is clicked (and again on reset)
-                          DTOutput("table"),
-                          br(),
-                          ## end of Actions and table
-                          
-                          ## Notes ----
-                          tags$fieldset(
-                            tags$legend(h3("Notes")),
-                            HTML(paste0("<ul><li>All figures are as of July 1 and are adjusted for 
-                                                        census net undercoverage (including adjustment for 
-                                                        incompletely enumerated Indian Reserves).</li>",
-                                        "<li>As of January 2020, Local Health Area (LHA) numbering 
-                                                        has been updated to reflect the latest version of 
-                                                        the boundaries released by the Ministry of Health. 
-                                                        Translation between old and new LHA identifiers 
-                                                        can be downloaded <b>", 
-                                        downloadLink(outputId = "downloadTranslation", label = "here"),
-                                        "</b>.</li>",
-                                        "<li>Don't see what you need? See our Custom 
+            ## Main tab ----
+            tabPanel(title = "Main",
+                     tags$head(tags$style(type='text/css', ".nav-tabs {font-size: 20px} ")),
+            
+                     sidebarLayout(
+                       sidebarPanel(style = "background-color:#F2F2F2;",
+                                    tags$fieldset(
+                                      tags$legend(h3("")),
+                                      HTML(paste0("<strong>Estimates:</strong> Years ", switch_year, 
+                                                  " and earlier (updated ", dataVersion_Est,
+                                                  ").", "<br>",
+                                                  "<strong>Projections:</strong> Years ", Proj_Years, 
+                                                  " (updated ", dataVersion_Proj, ").", "<br><br>", 
+                                                  "Estimate and projection figures can be updated 
+                                                  independently at different times of the year.")),
+                                      br(),br(),
+                                      tags$legend(h3("Step 1: Select data")),
+                                      HTML("Use the Ctrl or Shift key to select multiple entries."),
+                                      br(),br(),
+                                      uiOutput("Region.Type"),
+                                      uiOutput("Region.Name"),
+                                      uiOutput("Year"),
+                                      uiOutput("Gender")
+                                    ),
+                                    br(),
+                                    tags$fieldset(
+                                      HTML(paste0("Produced by BC Stats ", "<br>", 
+                                                  "Estimates data version: ", dataVersion_Est, "<br>", 
+                                                  "Projections data version: ", dataVersion_Proj))
+                                    )
+                       ),  ## end of sidebarPanel
+                       
+                       mainPanel(
+                         ## Age selection ----
+                         tags$fieldset(style = "margin-top:20px;",
+                                       tags$legend(h3("Step 2: Select age format")),
+                                       column(width = 12,
+                                              column(width = 3,
+                                                     tags$fieldset(tags$legend(h4("Select type of age group")),
+                                                                   uiOutput("Age_Type"))
+                                              ),  ## end of column
+                                              ## Conditional panels: only show if "custom" age type is selected
+                                              # https://shiny.rstudio.com/reference/shiny/1.0.5/conditionalPanel.html
+                                              column(width = 3, 
+                                                     conditionalPanel(
+                                                       condition = "input.Age_Type == 'custom'",
+                                                       tags$fieldset(tags$legend(h4("Custom age groups example"))),
+                                                       tableOutput(outputId = "example_table"))
+                                              ),  ## end of column
+                                              column(width = 6,
+                                                     conditionalPanel(
+                                                       condition = "input.Age_Type == 'custom'",
+                                                       tags$fieldset(tags$legend(h4("Custom age groups")),
+                                                                     br(),
+                                                                     column(width = 6,
+                                                                            numericInput(inputId = "start1", 
+                                                                                         label = "From - 1st", 
+                                                                                         value = NA, 
+                                                                                         min = 0, max = 99)),
+                                                                     column(width = 6,
+                                                                            numericInput(inputId = "end1", 
+                                                                                         label = "To - 1st", 
+                                                                                         value = NA, 
+                                                                                         min = 0, max = 99)), 
+                                                                     column(width = 6,
+                                                                            numericInput(inputId = "start2", 
+                                                                                         label = "From - 2nd", 
+                                                                                         value = NA, 
+                                                                                         min = 0, max = 99)), 
+                                                                     column(width = 6,
+                                                                            numericInput(inputId = "end2", 
+                                                                                         label = "To - 2nd", 
+                                                                                         value = NA, 
+                                                                                         min = 0, max = 99)), 
+                                                                     column(width = 6,
+                                                                            numericInput(inputId = "start3", 
+                                                                                         label = "From - 3rd", 
+                                                                                         value = NA, 
+                                                                                         min = 0, max = 99)), 
+                                                                     column(width = 6,
+                                                                            numericInput(inputId = "end3", 
+                                                                                         label = "To - 3rd", 
+                                                                                         value = NA, 
+                                                                                         min = 0, max = 99)), 
+                                                                     column(width = 6,
+                                                                            numericInput(inputId = "start4", 
+                                                                                         label = "From - 4th", 
+                                                                                         value = NA, 
+                                                                                         min = 0, max = 99)),
+                                                                     column(width = 6,
+                                                                            numericInput(inputId = "end4", 
+                                                                                         label = "To - 4th", 
+                                                                                         value = NA, 
+                                                                                         min = 0, max = 99))
+                                                       )  ## end of tags$fieldset
+                                                     )  ## end of conditionalPanel
+                                              )
+                                       )
+                         ),  ## end of tags$fieldset (Age selection)
+                         ## Actions and table ----
+                         br(),
+                         tags$fieldset(
+                           tags$legend(h3("Step 3: Action")),
+                           column(width=12,
+                                  actionButton(inputId = "goButton", label = "Generate output"),
+                                  actionButton(inputId = "resetButton", label = "Reset selection"),
+                                  downloadButton(outputId = "downloadData", label = "Download data as csv")
+                           )
+                         ),
+                         br(),br(),
+                         DTOutput("default_table"),  ## only shows until "Generate Output" is clicked (and again on reset)
+                         DTOutput("table"),
+                         br(),
+                         ## end of Actions and table
+
+                         ## Notes ----
+                         tags$fieldset(
+                         tags$legend(h3("Notes")),
+                         HTML(paste0("<ul><li>All figures are as of July 1 and are adjusted for 
+                                              census net undercoverage (including adjustment for 
+                                              incompletely enumerated Indian Reserves).</li>",
+                                     "<li>As of January 2020, Local Health Area (LHA) numbering has 
+                                          been updated to reflect the latest version of the boundaries 
+                                          released by the Ministry of Health. Translation between old 
+                                          and new LHA identifiers can be downloaded <b>", 
+                                          downloadLink(outputId = "downloadTranslation", label = "here"),
+                                          "</b>.</li>",
+                                     "<li>Don't see what you need? See our Custom 
                                                         Population Products <b>
                                                         <a href='https://www2.gov.bc.ca/gov/content/data/about-data-management/bc-stats/custom-products-services/custom-population-products'>page</a>
                                                         </b> for more information.</li>","</ul><br>"))
-                          )  ## end of tags$fieldset (Notes)
-                          ## ----
-                        )  ## end of mainPanel
-                      )  ## end of sidbarLayout
-             ),  ## end of tabPanel "Main"
-             
-             ## Methods tab ----
-             tabPanel(title = "Methods",
-                      column(width = 12,
-                             style = "margin-top:25px",
-                             tags$fieldset(
-                               tags$legend(h3("Population Information")),
-                               includeMarkdown("Methods.md")
-                             )
-                      )
-             ) ## end of tabPanel "Methods"
+                         )  ## end of tags$fieldset (Notes)
+                         ## ----
+                       )  ## end of mainPanel
+                     )  ## end of sidbarLayout
+            ),  ## end of tabPanel "Main"
+            
+            ## Methods tab ----
+            tabPanel(title = "Methods",
+                     column(width = 12,
+                            style = "margin-top:25px",
+                            tags$fieldset(
+                              tags$legend(h3("Population Information")),
+                              includeMarkdown("Methods.md")
+                            )
+                     )
+            ) ## end of tabPanel "Methods"
            )  ## end of tabsetPanel
     ), ## end of column
     ## footer ----
     column(width = 12,
            style = "background-color:#003366; border-top:2px solid #fcba19;",
-           tags$footer(class="footer",
-                       tags$div(class="container", style="display:flex; justify-content:center; flex-direction:column; text-align:center; height:46px;",
-                                tags$ul(style="display:flex; flex-direction:row; flex-wrap:wrap; margin:0; list-style:none; align-items:center; height:100%;",
-                                        tags$li(a(href="https://www2.gov.bc.ca/gov/content/home", "Home", style="font-size:1em; font-weight:normal; color:white; padding-left:5px; padding-right:5px; border-right:1px solid #4b5e7e;")),
-                                        tags$li(a(href="https://www2.gov.bc.ca/gov/content/home/disclaimer", "Disclaimer", style="font-size:1em; font-weight:normal; color:white; padding-left:5px; padding-right:5px; border-right:1px solid #4b5e7e;")),
-                                        tags$li(a(href="https://www2.gov.bc.ca/gov/content/home/privacy", "Privacy", style="font-size:1em; font-weight:normal; color:white; padding-left:5px; padding-right:5px; border-right:1px solid #4b5e7e;")),
-                                        tags$li(a(href="https://www2.gov.bc.ca/gov/content/home/accessibility", "Accessibility", style="font-size:1em; font-weight:normal; color:white; padding-left:5px; padding-right:5px; border-right:1px solid #4b5e7e;")),
-                                        tags$li(a(href="https://www2.gov.bc.ca/gov/content/home/copyright", "Copyright", style="font-size:1em; font-weight:normal; color:white; padding-left:5px; padding-right:5px; border-right:1px solid #4b5e7e;")),
-                                        tags$li(a(href="https://www2.gov.bc.ca/StaticWebResources/static/gov3/html/contact-us.html", "Contact", style="font-size:1em; font-weight:normal; color:white; padding-left:5px; padding-right:5px; border-right:1px solid #4b5e7e;"))
-                                )
-                       )
-           )
+           
+            tags$footer(class="footer",
+              tags$div(class="container", style="display:flex; justify-content:center; flex-direction:column; text-align:center; height:46px;",
+                tags$ul(style="display:flex; flex-direction:row; flex-wrap:wrap; margin:0; list-style:none; align-items:center; height:100%;",
+                  tags$li(a(href="https://www2.gov.bc.ca/gov/content/home", "Home", style="font-size:1em; font-weight:normal; color:white; padding-left:5px; padding-right:5px; border-right:1px solid #4b5e7e;")),
+                  tags$li(a(href="https://www2.gov.bc.ca/gov/content/home/disclaimer", "Disclaimer", style="font-size:1em; font-weight:normal; color:white; padding-left:5px; padding-right:5px; border-right:1px solid #4b5e7e;")),
+                  tags$li(a(href="https://www2.gov.bc.ca/gov/content/home/privacy", "Privacy", style="font-size:1em; font-weight:normal; color:white; padding-left:5px; padding-right:5px; border-right:1px solid #4b5e7e;")),
+                  tags$li(a(href="https://www2.gov.bc.ca/gov/content/home/accessibility", "Accessibility", style="font-size:1em; font-weight:normal; color:white; padding-left:5px; padding-right:5px; border-right:1px solid #4b5e7e;")),
+                  tags$li(a(href="https://www2.gov.bc.ca/gov/content/home/copyright", "Copyright", style="font-size:1em; font-weight:normal; color:white; padding-left:5px; padding-right:5px; border-right:1px solid #4b5e7e;")),
+                  tags$li(a(href="https://www2.gov.bc.ca/StaticWebResources/static/gov3/html/contact-us.html", "Contact", style="font-size:1em; font-weight:normal; color:white; padding-left:5px; padding-right:5px; border-right:1px solid #4b5e7e;"))
+                )
+              )
+             )
     )  ## end of column "footer"
     ## ----
   )  ## end of fluidrow
@@ -234,7 +254,7 @@ server <- function(input, output, session) {
     selectInput(inputId = "Region.Type",
                 label = h4("Select a region type"),
                 choices = unique(data1$Region.Type),
-                selected = initVals[1],         ## default selection: "Local Health Area"
+                selected = initVals[1],         ## default selection: "Local Health Area", 
                 selectize = FALSE, size = 10    ## forces all 10 options to be shown at once (not drop-down)
                 )
   })
@@ -261,43 +281,43 @@ server <- function(input, output, session) {
     updateSelectInput(session,
                       inputId = "Region.Name",
                       choices = choices_list,
-                      selected = initVals[2]  ## default selection: "British Columbia"
+                      selected = initVals[2] ## default selection: "British Columbia"
                       )
   })
 
   ## select Year(s), multiples OK
+  # HTML(paste0("<strong>",switch_wording,"</strong>"))
   output$Year <- renderUI({
+    years <- c(min(data1$Year):switch_year, paste("--",switch_wording,"--"), (switch_year + 1):max(data1$Year))
     selectInput(inputId = "Year",
                 label = h4("Select year(s)"),
-                choices = unique(data1$Year),
+                choices = years, #unique(data1$Year),
                 multiple = TRUE,
                 selectize = FALSE, size = 7)
   })
-  
+
   ## update Year(s) choices based on selected Region.Type
   observeEvent(input$Region.Type,{
     
-    unique_year <- #sort(
-      unique((data1 %>% filter(Region.Type == input$Region.Type))$Year) 
-                        #, decreasing = TRUE)
-    
+    # unique_year <- unique((data1 %>% filter(Region.Type == input$Region.Type))$Year)
+    unique_year <- c(min(data1$Year):switch_year, paste("--",switch_wording,"--"), (switch_year + 1):max(data1$Year))
     updateSelectInput(session,
                       inputId = "Year",
                       choices = unique_year,
                       selected = initVals[3]  ## default selection: max year
                       )
   })
-
+  
   ## select Sex(es), multiples OK
   output$Gender <- renderUI({
     selectInput(inputId = "Gender",
                 label = h4("Select gender(s)"),
                 choices = c("Males" = "M", "Females" = "F", "Totals" = "T"),
-                selected = initVals[-(1:3)],  ## default selection: all ("M"ales, "F"emales, "T"otals)
+                selected = initVals[-(1:3)], ## default selection: all ("M"ales, "F"emales, "T"otals)
                 multiple = TRUE,
                 selectize = FALSE, size = 3) ## QQ: Is 4 a minimum? It's ignoring size=3
   })
-
+  
   ## select type of age group, just one
   output$Age_Type <- renderUI({
     radioButtons(inputId = "Age_Type",
@@ -306,12 +326,13 @@ server <- function(input, output, session) {
                              "Custom Age Groups" = "custom"),
                  selected = "Totals")
   })
-
+  
   ## example table for custom age groups (as text to keep decimals out)
   output$example_table <- renderTable({
     matrix(data = c("15", "24",  "25", "54",  "55", "64",  "65", "74"),
            nrow = 4, ncol = 2, byrow = TRUE, dimnames = list(c(1:4), c("From", "To")))
   })
+
 
   ## initial table with default selections ----
   
@@ -335,9 +356,9 @@ server <- function(input, output, session) {
     ## show table only initially (before "Generate Output" button is clicked)
     if(showDefaultTable()) {
       data_init(data1, initVals)
-      } else {
-        NULL
-      }
+    } else {
+      NULL
+    }
   },
   filter = "none",
   ## table options: https://shiny.rstudio.com/articles/datatables.html
@@ -382,8 +403,8 @@ server <- function(input, output, session) {
                      event_action = "Generate data")
     
   })
-
-
+  
+  
   ## reactive data table and download ----
   ## create reactive values for input data to create table and download data
   data_df <- eventReactive(input$goButton, {
@@ -523,8 +544,8 @@ server <- function(input, output, session) {
 
   output$table <- DT::renderDataTable(datatable({
     
-    ## call function to create specified data table
-    data_df()
+      ## call function to create specified data table
+      data_df()
       
     },
     filter = "none",
@@ -541,7 +562,7 @@ server <- function(input, output, session) {
   output$downloadData <- downloadHandler(
     
     filename = function() {
-      c("Population_Estimates.csv")
+      c("Population_Projections.csv")
     },
 
     content = function(file) {
