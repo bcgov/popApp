@@ -3,11 +3,13 @@ options(java.parameters = "-Xmx8g" )  ## run BEFORE loading any libraries else c
 ### load libraries  ----
 if (!require('here')) install.packages('here')
 if (!require('tidyverse')) install.packages('tidyverse')
-if (!require('xlsx')) install.packages('xlsx')
+# if (!require('xlsx')) install.packages('xlsx')
+if (!require('openxlsx')) install.packages('openxlsx')
 
 library(here)
 library(tidyverse)  ## for: dplyr, readr, ...
-library(xlsx)
+# library(xlsx)
+library(openxlsx)
 
 
 ### get data ----
@@ -26,9 +28,11 @@ data.pretty <- function(base_folder, file_name, file_type, mysheet, age_var, dat
   } else {
     
     ## read in xlsx data
-    df <- xlsx::read.xlsx2(file = paste0(base_folder, file_name, age_var, ".xlsx"),
-                           sheetName = mysheet, stringsAsFactors = FALSE) %>%
-      mutate_at(vars(-c(data_cols[1])), as.numeric)  ## else everything comes in as character class
+    # df <- xlsx::read.xlsx2(file = paste0(base_folder, file_name, age_var, ".xlsx"),
+    #                        sheetName = mysheet, stringsAsFactors = FALSE) %>%
+    #   mutate_at(vars(-c(data_cols[1])), as.numeric)  ## else everything comes in as character class
+    df <- openxlsx::readWorkbook(xlsxFile = paste0(base_folder, file_name, age_var, ".xlsx")) %>%
+      mutate_at(vars(-c(data_cols[1])), as.numeric) 
   }
   
   ## B. change colnames if needed
