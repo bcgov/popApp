@@ -22,9 +22,7 @@ base_folder <- here("analysis", "inputs", paste0("/"))
 
 ## variables needed to read in Excel/csv data, if updating data
 file_name <- "Combined"   ## file name prefix ("1" or "5" are added to file_name in function later)
-#file_type <- "xlsx"      ## "xlsx" or "csv"
-file_type <- "csv"        ## "xlsx" or "csv"
-# mysheet <- "DATA"       ## name of sheet with data
+file_type <- "xlsx"       ## "xlsx" or "csv"
 mysheet <- "Combined1"    ## name of sheet with data
 col_RegionType <- "TYPE"  ## case-sensitive name of Region Type column
 col_Region <- "TYPEID"    ## case-sensitive name of Region number column
