@@ -3,12 +3,11 @@ options(java.parameters = "-Xmx8g" )  ## run BEFORE loading any libraries else c
 ### load libraries  ----
 if (!require('here')) install.packages('here')
 if (!require('tidyverse')) install.packages('tidyverse')
-# if (!require('xlsx')) install.packages('xlsx')
 if (!require('openxlsx')) install.packages('openxlsx')
+
 
 library(here)
 library(tidyverse)  ## for: dplyr, readr, ...
-# library(xlsx)
 library(openxlsx)
 
 
@@ -19,20 +18,14 @@ data.pretty <- function(base_folder, file_name, file_type, mysheet, age_var, dat
   ## A. if csv file_type, else xlsx file_type
   if(file_type == "csv"){
     
-    ## pre-specify column types
-    #col_specs <- cols(.default = col_integer(), col_RegionType = col_character())
-    
     ## read in csv data
     df <- readr::read_csv(file = paste0(base_folder, file_name, age_var, ".csv"))   #,col_names = TRUE, col_specs)
     
   } else {
     
     ## read in xlsx data
-    # df <- xlsx::read.xlsx2(file = paste0(base_folder, file_name, age_var, ".xlsx"),
-    #                        sheetName = mysheet, stringsAsFactors = FALSE) %>%
-    #   mutate_at(vars(-c(data_cols[1])), as.numeric)  ## else everything comes in as character class
     df <- openxlsx::readWorkbook(xlsxFile = paste0(base_folder, file_name, age_var, ".xlsx")) %>%
-      mutate_at(vars(-c(data_cols[1])), as.numeric) 
+      mutate_at(vars(-c(data_cols[1])), as.numeric)
   }
   
   ## B. change colnames if needed
@@ -70,7 +63,7 @@ data.pretty <- function(base_folder, file_name, file_type, mysheet, age_var, dat
   
   ## if analysis/inputs/lookup.csv does not exist, make it (no longer working b/c data changed)
   if(!file.exists(here("analysis", "inputs", "lookup.csv"))){
-    ## requires: "analysis/inputs/REGNAMES_from_Access.csv"
+    ## requires: "analysis/inputs/REGNAMES.csv"
     ## made manually by opening Database work/WorkingFile.accdb and copying REGNAMES into Excel
     source(here("analysis", "make_lookup.R"))
   }
@@ -92,7 +85,7 @@ data.pretty <- function(base_folder, file_name, file_type, mysheet, age_var, dat
     Region.Type == "RD" ~ "Regional District",
     Region.Type == "SD" ~ "School District",
     Region.Type == "SR" ~ "Special Regions (CMAs and Vancouver Island)",
-	  Region.Type == "CH" ~ "Community Health Service Area",
+    Region.Type == "CH" ~ "Community Health Service Area",
     TRUE ~ as.character(Region.Type)
     )
   )
@@ -104,7 +97,7 @@ data.pretty <- function(base_folder, file_name, file_type, mysheet, age_var, dat
   
   ## save again in Archive folder with date
   saveRDS(df, paste0("data_archive/data", age_var, "_", Sys.Date(), ".rds"))
-  
+   
   ## return df
   df
 }
