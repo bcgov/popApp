@@ -18,8 +18,7 @@ if(!("df" %in% ls(.GlobalEnv))){
   } else {
     
     ## read in xlsx data
-    df <- xlsx::read.xlsx2(file = paste0(base_folder, file_name, age_var, ".xlsx"),
-                           sheetName = mysheet, stringsAsFactors = FALSE) %>%
+    df <- openxlsx::readWorkbook(xlsxFile = paste0(base_folder, file_name, age_var, ".xlsx")) %>%
       mutate_at(vars(-c(data_cols[1])), as.numeric)  ## else everything comes in as character class
   }
   
@@ -43,11 +42,11 @@ lookup <- df %>%
 
 ## read in REGNAMES_from_Access.csv to match up
 ## REGNAMES_from_Access.csv was created by opening Database work/WorkingFile.accdb and copying REGNAMES into Excel
+# REGNAMES <- read_csv(here("analysis", "inputs", "REGNAMES_from_Access.csv"))
 REGNAMES <- read_csv(here("analysis", "inputs", "REGNAMES.csv"))
 
 ## add Region.Names
-lookup <- left_join(lookup, REGNAMES, by = c("Region" = "Region", "Region.Type" = "Region.Type"))
-## NAs are due to fact that REGNAMES has names for only 7 in SR Region.Type
+lookup <- left_join(lookup, REGNAMES, by = c("Region", "Region.Type"))
 
 ## save as csv
 write_csv(lookup, here("analysis", "inputs", "lookup.csv"))
