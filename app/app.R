@@ -60,7 +60,7 @@ ui <- fluidPage(title = "BC Population Estimates & Projections",
                  img(src = "bcstats_logo_rev.png", title = "BC Stats", height = "80px", alt = "British Columbia - BC Stats"),
                  onclick="gtag"
                ),
-               h1("British Columbia - Population Estimates & Projections", style="font-weight:400; color:white; margin: 5px 5px 0 18px;")
+               h1("Population Estimates & Projections for British Columbia", style="font-weight:400; color:white; margin: 5px 5px 0 18px;")
              )
            )
     ),
