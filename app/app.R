@@ -425,24 +425,24 @@ server <- function(input, output, session) {
     if(input$Age_Type == "5-year Age Groups") {
       df <- data1 %>%
         mutate(`LT1` = `0`,
-               `1-4` = `1` + `2` + `3` + `4`,
-               `5-9` = `5` + `6` + `7` + `8` + `9`,
-               `10-14` = `10` + `11` + `12` + `13` + `14`,
-               `15-19` = `15` + `16` + `17` + `18` + `19`,
-               `20-24` = `20` + `21` + `22` + `23` + `24`,
-               `25-29` = `25` + `26` + `27` + `28` + `29`,
-               `30-34` = `30` + `31` + `32` + `33` + `34`,
-               `35-39` = `35` + `36` + `37` + `38` + `39`,
-               `40-44` = `40` + `41` + `42` + `43` + `44`,
-               `45-49` = `45` + `46` + `47` + `48` + `49`,
-               `50-54` = `50` + `51` + `52` + `53` + `54`,
-               `55-59` = `55` + `56` + `57` + `58` + `59`,
-               `60-64` = `60` + `61` + `62` + `63` + `64`,
-               `65-69` = `65` + `66` + `67` + `68` + `69`,
-               `70-74` = `70` + `71` + `72` + `73` + `74`,
-               `75-79` = `75` + `76` + `77` + `78` + `79`,
-               `80-84` = `80` + `81` + `82` + `83` + `84`,
-               `85-89` = `85` + `86` + `87` + `88` + `89`,
+               ` 1 to 4` = `1` + `2` + `3` + `4`,
+               ` 5 to 9` = `5` + `6` + `7` + `8` + `9`,
+               `10 to 14` = `10` + `11` + `12` + `13` + `14`,
+               `15 to 19` = `15` + `16` + `17` + `18` + `19`,
+               `20 to 24` = `20` + `21` + `22` + `23` + `24`,
+               `25 to 29` = `25` + `26` + `27` + `28` + `29`,
+               `30 to 34` = `30` + `31` + `32` + `33` + `34`,
+               `35 to 39` = `35` + `36` + `37` + `38` + `39`,
+               `40 to 44` = `40` + `41` + `42` + `43` + `44`,
+               `45 to 49` = `45` + `46` + `47` + `48` + `49`,
+               `50 to 54` = `50` + `51` + `52` + `53` + `54`,
+               `55 to 59` = `55` + `56` + `57` + `58` + `59`,
+               `60 to 64` = `60` + `61` + `62` + `63` + `64`,
+               `65 to 69` = `65` + `66` + `67` + `68` + `69`,
+               `70 to 74` = `70` + `71` + `72` + `73` + `74`,
+               `75 to 79` = `75` + `76` + `77` + `78` + `79`,
+               `80 to 84` = `80` + `81` + `82` + `83` + `84`,
+               `85 to 89` = `85` + `86` + `87` + `88` + `89`,
                `90++` = `90+`,
                Total2 = Total) %>%
         select(-(which(names(data1) == "0"):which(names(data1) == "90+")), `90+` = `90++`, -Total2)
@@ -478,7 +478,7 @@ server <- function(input, output, session) {
         ## !! Going to make the assumption that the user puts the number in the correct order;
         ## !! If they didn't they can swap them to correct the labels
         # A1 <- c(paste0(min(custom_ages$S[1], custom_ages$E[1]), " - ", max(custom_ages$S[1], custom_ages$E[1])))
-        A1 <- paste(custom_ages$S[1], "-", custom_ages$E[1])
+        A1 <- paste(custom_ages$S[1], "to", custom_ages$E[1])
 
         ## 1b. create custom age group 1, drop single-year columns, place Total at end (after new variable)
         df <- data1 %>%
@@ -497,7 +497,7 @@ server <- function(input, output, session) {
       if(!is.na(custom_ages$S[2]) & !is.na(custom_ages$E[2])){
 
         # A2 <- c(paste0(min(custom_ages$S[2], custom_ages$E[2]), " - ", max(custom_ages$S[2], custom_ages$E[2])))
-        A2 <- paste(custom_ages$S[2], "-", custom_ages$E[2])
+        A2 <- paste(custom_ages$S[2], "to", custom_ages$E[2])
         df <- df %>%
           mutate(
             !!A2 := rowSums(data1[which(names(data1) == custom_ages$S[2]):
@@ -509,7 +509,7 @@ server <- function(input, output, session) {
       if(!is.na(custom_ages$S[3]) & !is.na(custom_ages$E[3])){
 
         # A3 <- c(paste0(min(custom_ages$S[3], custom_ages$E[3]), " - ", max(custom_ages$S[3], custom_ages$E[3])))
-        A3 <- paste(custom_ages$S[3], "-", custom_ages$E[3])
+        A3 <- paste(custom_ages$S[3], "to", custom_ages$E[3])
         df <- df %>%
           mutate(
             !!A3 := rowSums(data1[which(names(data1) == custom_ages$S[3]):
@@ -521,7 +521,7 @@ server <- function(input, output, session) {
       if(!is.na(custom_ages$S[4]) & !is.na(custom_ages$E[4])){
 
         # A4 <- c(paste0(min(custom_ages$S[4], custom_ages$E[4]), " - ", max(custom_ages$S[4], custom_ages$E[4])))
-        A4 <- paste(custom_ages$S[4], "-", custom_ages$E[4])
+        A4 <- paste(custom_ages$S[4], "to", custom_ages$E[4])
         df <- df %>%
           mutate(
             !!A4 := rowSums(data1[which(names(data1) == custom_ages$S[4]):
