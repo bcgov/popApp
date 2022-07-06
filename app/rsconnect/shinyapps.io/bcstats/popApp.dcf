@@ -5,8 +5,9 @@ account: bcstats
 server: shinyapps.io
 hostUrl: https://api.shinyapps.io/v1
 appId: 958258
-bundleId: 4969173
+bundleId: 6075867
 url: https://bcstats.shinyapps.io/popApp/
-when: 1630015465.74776
+when: 1657134246.72772
+lastSyncTime: 1657134246.72772
 asMultiple: FALSE
 asStatic: FALSE

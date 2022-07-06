@@ -473,7 +473,12 @@ server <- function(input, output, session) {
 
         ## 1a. create label of custom age group 1 (to be able to use as dynamic name in select)
         ## use min number first, then max number (in case entered backwards)
-        A1 <- c(paste0(min(custom_ages$S[1], custom_ages$E[1]), " - ", max(custom_ages$S[1], custom_ages$E[1])))
+        ## !! Edit: because these values are characters 15 comes before 8
+        ## !! Since largest age group needs to be 90+ cannot change to numeric
+        ## !! Going to make the assumption that the user puts the number in the correct order;
+        ## !! If they didn't they can swap them to correct the labels
+        # A1 <- c(paste0(min(custom_ages$S[1], custom_ages$E[1]), " - ", max(custom_ages$S[1], custom_ages$E[1])))
+        A1 <- paste(custom_ages$S[1], "-", custom_ages$E[1])
 
         ## 1b. create custom age group 1, drop single-year columns, place Total at end (after new variable)
         df <- data1 %>%
@@ -491,7 +496,8 @@ server <- function(input, output, session) {
       ## 2. if custom age group 2 is not NA, calculate and display its data
       if(!is.na(custom_ages$S[2]) & !is.na(custom_ages$E[2])){
 
-        A2 <- c(paste0(min(custom_ages$S[2], custom_ages$E[2]), " - ", max(custom_ages$S[2], custom_ages$E[2])))
+        # A2 <- c(paste0(min(custom_ages$S[2], custom_ages$E[2]), " - ", max(custom_ages$S[2], custom_ages$E[2])))
+        A2 <- paste(custom_ages$S[2], "-", custom_ages$E[2])
         df <- df %>%
           mutate(
             !!A2 := rowSums(data1[which(names(data1) == custom_ages$S[2]):
@@ -502,7 +508,8 @@ server <- function(input, output, session) {
       ## 3. if custom age group 3 is not NA, calculate and display its data
       if(!is.na(custom_ages$S[3]) & !is.na(custom_ages$E[3])){
 
-        A3 <- c(paste0(min(custom_ages$S[3], custom_ages$E[3]), " - ", max(custom_ages$S[3], custom_ages$E[3])))
+        # A3 <- c(paste0(min(custom_ages$S[3], custom_ages$E[3]), " - ", max(custom_ages$S[3], custom_ages$E[3])))
+        A3 <- paste(custom_ages$S[3], "-", custom_ages$E[3])
         df <- df %>%
           mutate(
             !!A3 := rowSums(data1[which(names(data1) == custom_ages$S[3]):
@@ -513,7 +520,8 @@ server <- function(input, output, session) {
       ## 4. if custom age group 4 is not NA, calculate and display its data
       if(!is.na(custom_ages$S[4]) & !is.na(custom_ages$E[4])){
 
-        A4 <- c(paste0(min(custom_ages$S[4], custom_ages$E[4]), " - ", max(custom_ages$S[4], custom_ages$E[4])))
+        # A4 <- c(paste0(min(custom_ages$S[4], custom_ages$E[4]), " - ", max(custom_ages$S[4], custom_ages$E[4])))
+        A4 <- paste(custom_ages$S[4], "-", custom_ages$E[4])
         df <- df %>%
           mutate(
             !!A4 := rowSums(data1[which(names(data1) == custom_ages$S[4]):
