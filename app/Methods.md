@@ -3,27 +3,35 @@ title: "Methods"
 output: html_document
 ---
 
-Methods documentation is available **<a href='https://www2.gov.bc.ca/gov/content/data/statistics/people-population-community/population/population-estimates/about-population-estimates'>here</a>**, and in these PDFs:
+Methodology for the population estimates from 2017-2021 and for the projections from 2022-2045 has changed. See **<a href = 'https://www2.gov.bc.ca/assets/gov/data/statistics/people-population-community/population/methodological_highlights.pdf', target = '_blank'>documentation on the new methodology</a>** for details.
 
-* Estimates: **<a href='https://www2.gov.bc.ca/assets/gov/data/statistics/people-population-community/population/pop_census_2016_highlights_population_dwellings.pdf'>2016 Census: Population and Dwelling Counts</a>**  
-* Projections: **<a href='https://www2.gov.bc.ca/assets/gov/data/statistics/people-population-community/population/pop_small_area_population_projections_people_1999.pdf'>Small Area Population Projections (P.E.O.P.L.E.) (1999)</a>**
+Additional information can be found on the **<a href = 'https://www2.gov.bc.ca/gov/content/data/statistics/people-population-community/population', target = '_blank'>BC Stats website</a>** or by following the links below:
 
-BC Stats' Population website is: **<a href='https://www2.gov.bc.ca/gov/content/data/statistics/people-population-community/population'>https://www2.gov.bc.ca/gov/content/data/statistics/people-population-community/population/</a>**.
+* <a href='https://www2.gov.bc.ca/gov/content/data/statistics/people-population-community/population/population-estimates', target = '_blank'>Population Estimates</a>
 
-Information is broken down by: **<a href='https://www2.gov.bc.ca/gov/content/data/statistics/people-population-community/population/population-estimates'>Population Estimates</a>**, **<a href='https://www2.gov.bc.ca/gov/content/data/statistics/people-population-community/population/population-projections'>Population Projections</a>**, and **<a href='https://www2.gov.bc.ca/gov/content/data/statistics/people-population-community/population/household-projections'>Household Projections</a>**.
-<br><br>
+* <a href='https://www2.gov.bc.ca/gov/content/data/statistics/people-population-community/population/population-estimates/about-population-estimates', target = '_blank'>About Population Estimates</a>
+
+* <a href='https://www2.gov.bc.ca/assets/gov/data/statistics/people-population-community/population/pop_census_2016_highlights_population_dwellings.pdf', target = '_blank'>2016 Census: Population and Dwelling Counts</a>
+
+* <a href='https://www2.gov.bc.ca/gov/content/data/statistics/people-population-community/population/population-projections', target = '_blank'>Population Projections</a>
+
+* <a href='https://www2.gov.bc.ca/assets/gov/data/statistics/people-population-community/population/pop_small_area_population_projections_people_1999.pdf', target = '_blank'>Small Area Population Projections (P.E.O.P.L.E.) (1999)</a>
+
+* <a href='https://www2.gov.bc.ca/gov/content/data/statistics/people-population-community/population/household-projections', target = '_blank'>Household Projections</a>
+
+<br>
 
 ### Open Licence
 
-Data obtained through this application is distributed under the **<a href='https://www2.gov.bc.ca/gov/content/data/open-data/open-government-licence-bc'>Open Government License</a>**.
+Data obtained through this application is distributed under the **<a href='https://www2.gov.bc.ca/gov/content/data/open-data/open-government-licence-bc', target = '_blank'>Open Government License</a>**.
 <br><br>
 
 ### GitHub Repository
 
-The GitHub repo for this app is: **<a href='https://github.com/bcgov/popApp'>https://github.com/bcgov/popApp</a>**.
+The source code for this app can be found on GitHub: **<a href='https://github.com/bcgov/popApp', target = '_blank'>https://github.com/bcgov/popApp</a>**.
 <br><br>
 
-### Related Population App
+### Household Projections App
 
-* Household Projections app: **<a href='https://bcstats.shinyapps.io/hsdProjApp/'>https://bcstats.shinyapps.io/hsdProjApp/</a>**
+Related to the population projections are the household projections: **<a href='https://bcstats.shinyapps.io/hsdProjApp', target = '_blank'>https://bcstats.shinyapps.io/hsdProjApp</a>**
 <br><br>

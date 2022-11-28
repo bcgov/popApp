@@ -19,10 +19,10 @@
 # https://bcstats.shinyapps.io/popProjApp/
 
 ## metadata for app ----
-dataVersion_Est <- "October 2021"     ## date of work done on data1.rds for Estimates
-dataVersion_Proj <- "October 2021"    ## date of work done on data1.rds for Projections
-Proj_Years <- "2021-2041"             ## years of Projections data
-switch_year <- 2020                   ## year Estimates runs to (and includes)
+dataVersion_Est <- "November 2022"     ## date of work done on data1.rds for Estimates
+dataVersion_Proj <- "November 2022"    ## date of work done on data1.rds for Projections
+Proj_Years <- "2022-2045"             ## years of Projections data
+switch_year <- 2021                   ## year Estimates runs to (and includes)
 switch_wording <- "Estimates above, Projections below"  ## text in Years selection AFTER switch-year
 
 
