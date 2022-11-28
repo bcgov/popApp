@@ -11,6 +11,6 @@
 /data_archive/*
 /app/data/*
 /sandbox/*
-/app/rsconnect/*
+*rsconnect/*
 NOTES.txt
-/app/TEST_versions/*
+*TEST_versions/*
