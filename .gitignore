@@ -8,9 +8,9 @@
 *.html
 *.xlsx
 *.csv
-/data_archive/*
-/app/data/*
-/sandbox/*
-*rsconnect/*
+*data_archive*
+*data*
+*sandbox*
+*rsconnect*
 NOTES.txt
-*TEST_versions/*
+*TEST_versions*

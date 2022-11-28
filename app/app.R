@@ -108,7 +108,7 @@ ui <- fluidPage(title = "BC Population Estimates & Projections",
                          tags$fieldset(style = "margin-top:20px;",
                                        tags$legend(h3("Step 2: Select age format")),
                                        column(width = 12,
-                                              column(width = 3,
+                                              column(width = 12,
                                                      tags$fieldset(tags$legend(h4("Select type of age group")),
                                                                    uiOutput("Age_Type"))
                                               ),  ## end of column
@@ -170,10 +170,22 @@ ui <- fluidPage(title = "BC Population Estimates & Projections",
                                               )
                                        )
                          ),  ## end of tags$fieldset (Age selection)
+                         ## Customize layout ----
+                         tags$fieldset(style = "margin-top:20px;",
+                                       tags$legend(h3("Step 3: Customize layout")),
+                                                   column(width = 12,
+                                                   column(width = 12, ## second column to match alignment of age selection  
+                                                          tags$fieldset(tags$legend(h4("Select variable to display as columns")),
+                                                                        radioButtons(inputId = "Column_Var",
+                                                                                     label = NULL,
+                                                                                     choices = c("Age", "Gender", "Year", "None"),
+                                                                                     inline = TRUE,
+                                                                                     select = "Age"))))
+                                       ),   ## end of tags$fieldset (Customize layout)
                          ## Actions and table ----
                          br(),
                          tags$fieldset(
-                           tags$legend(h3("Step 3: Action")),
+                           tags$legend(h3("Step 4: Action")),
                            column(width=12,
                                   actionButton(inputId = "goButton", label = "Generate output"),
                                   actionButton(inputId = "resetButton", label = "Reset selection"),
@@ -322,9 +334,10 @@ server <- function(input, output, session) {
   output$Age_Type <- renderUI({
     radioButtons(inputId = "Age_Type",
                  label = NULL,
-                 choices = c("Single Year Age Groups", "5-year Age Groups", "Totals", 
+                 choices = c("Totals", "Single Year Age Groups", "5-year Age Groups", 
                              "Custom Age Groups" = "custom"),
-                 selected = "Totals")
+                 selected = "Totals",
+                 inline = TRUE)
   })
   
   ## example table for custom age groups (as text to keep decimals out)
@@ -539,14 +552,26 @@ server <- function(input, output, session) {
 
     ## B. make selections
     Reg.Type <- c(input$Region.Type)  ## to be able to use as dynamic name in select
-    df[df$Region.Type == input$Region.Type, ] %>%
+    output <- df[df$Region.Type == input$Region.Type, ] %>%
       filter(Region.Name %in% input$Region.Name) %>%
       filter(Year %in% input$Year) %>%
       filter(Gender %in% input$Gender) %>%
       select(Region, !!Reg.Type := Region.Name, everything(), -Region.Type)
+    
+    ## C. customize layout 
+    output <- output %>%
+      pivot_longer(-c(Region, !!Reg.Type, Year, Gender),
+                   names_to = "Age", values_to = "Population")
+    
+    if(input$Column_Var != "None") {
+      output <- output %>%
+        pivot_wider(names_from = input$Column_Var, values_from = "Population")
+    }
+    
+    output
 
-    ## C. call data_df() in renderDataTable to create table in app
-    ## D. call data_df() in downloadHandler to download data
+    ## D. call data_df() in renderDataTable to create table in app
+    ## E. call data_df() in downloadHandler to download data
 
   })
 
