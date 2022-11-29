@@ -3,7 +3,7 @@ title: "Methods"
 output: html_document
 ---
 
-Methodology for the population estimates from 2017-2021 and for the projections from 2022-2045 has changed. See **<a href = 'https://www2.gov.bc.ca/assets/gov/data/statistics/people-population-community/population/methodological_highlights.pdf', target = '_blank'>documentation on the new methodology</a>** for details.
+Methodology for the population estimates from 2017-2021 and for the projections from 2022-2045 has changed. See **<a href = 'https://www2.gov.bc.ca/assets/gov/data/statistics/people-population-community/population/bc_population_estimates_and_projections_methodological_highlights.pdf', target = '_blank'>documentation on the new methodology</a>** for details.
 
 Additional information can be found on the **<a href = 'https://www2.gov.bc.ca/gov/content/data/statistics/people-population-community/population', target = '_blank'>BC Stats website</a>** or by following the links below:
 
@@ -33,5 +33,5 @@ The source code for this app can be found on GitHub: **<a href='https://github.c
 
 ### Household Projections App
 
-Related to the population projections are the household projections: **<a href='https://bcstats.shinyapps.io/hsdProjApp', target = '_blank'>https://bcstats.shinyapps.io/hsdProjApp</a>**
+Related to the population projections are the household projections: **<a href='https://bcstats.shinyapps.io/hsdProjApp', target = '_blank'>https://bcstats.shinyapps.io/hsdProjApp</a>**.
 <br><br>
