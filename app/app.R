@@ -17,6 +17,9 @@
 #      (Or, click on shiny icon (blue eye) at top right of Script window, "Manage Accounts" to log into shinyapps.io)
 # 
 # https://bcstats.shinyapps.io/popProjApp/
+#
+# Revision notes:
+# 2022-12-01 MK: 1) Changed region type select box to size=11 to fit TEA that was added; 2) Added alpha-sort on region type names
 
 ## metadata for app ----
 dataVersion_Est <- "November 2022"     ## date of work done on data1.rds for Estimates
@@ -265,9 +268,9 @@ server <- function(input, output, session) {
   output$Region.Type <- renderUI({
     selectInput(inputId = "Region.Type",
                 label = h4("Select a region type"),
-                choices = unique(data1$Region.Type),
+                choices = sort(unique(data1$Region.Type)),  #MK: added alpha-sort on region types
                 selected = initVals[1],         ## default selection: "Local Health Area", 
-                selectize = FALSE, size = 10    ## forces all 10 options to be shown at once (not drop-down)
+                selectize = FALSE, size = 11    ## forces all 10 options to be shown at once (not drop-down); MK: changed size from 10 to 11 to include TEA
                 )
   })
 
