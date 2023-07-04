@@ -20,10 +20,11 @@
 #
 # Revision notes:
 # 2022-12-01 MK: 1) Changed region type select box to size=11 to fit TEA that was added; 2) Added alpha-sort on region type names
+# 2022-04-03 MK: Added note to bottom app page explaining that CHSA numbering has been updated.
 
 ## metadata for app ----
-dataVersion_Est <- "November 2022"     ## date of work done on data1.rds for Estimates
-dataVersion_Proj <- "November 2022"    ## date of work done on data1.rds for Projections
+dataVersion_Est <- "April 2023"     ## date of work done on data1.rds for Estimates
+dataVersion_Proj <- "April 2023"    ## date of work done on data1.rds for Projections
 Proj_Years <- "2022-2045"             ## years of Projections data
 switch_year <- 2021                   ## year Estimates runs to (and includes)
 switch_wording <- "Estimates above, Projections below"  ## text in Years selection AFTER switch-year
@@ -55,18 +56,9 @@ ui <- fluidPage(title = "BC Population Estimates & Projections",
   theme = "bootstrap.css",
   HTML("<html lang='en'>"),
   fluidRow(
-    column(width = 12, 
-           style = "background-color:#003366; border-bottom:2px solid #fcba19; position:fixed; z-index:10000",
-           tags$header(class="header", style="padding:0 0px 0 0px; display:flex; height:80px; width:100%;",
-             tags$div(class="banner", style="display:flex; justify-content:flex-start; align-items:center; margin: 0 10px 0 10px",
-               a(href="https://www2.gov.bc.ca/gov/content/data/about-data-management/bc-stats",
-                 img(src = "bcstats_logo_rev.png", title = "BC Stats", height = "80px", alt = "British Columbia - BC Stats"),
-                 onclick="gtag"
-               ),
-               h1("Population Estimates & Projections for British Columbia", style="font-weight:400; color:white; margin: 5px 5px 0 18px;")
-             )
-           )
-    ),
+    ## appname = title that will appear in the header
+    bcsapps::bcsHeaderUI(id = 'header', appname = "Population Estimates & Projections for British Columbia"),
+
     column(width = 12,
            style = "margin-top:100px",
            
@@ -207,6 +199,8 @@ ui <- fluidPage(title = "BC Population Estimates & Projections",
                          HTML(paste0("<ul><li>All figures are as of July 1 and are adjusted for 
                                               census net undercoverage (including adjustment for 
                                               incompletely enumerated Indian Reserves).</li>",
+                                     "<li>As of April 2023, Community Health Service Area (CHSA) numbering has been updated 
+                                     to reflect the latest version of the boundaries released by the Ministry of Health.</li>",
                                      "<li>As of January 2020, Local Health Area (LHA) numbering has 
                                           been updated to reflect the latest version of the boundaries 
                                           released by the Ministry of Health. Translation between old 
@@ -236,28 +230,17 @@ ui <- fluidPage(title = "BC Population Estimates & Projections",
            )  ## end of tabsetPanel
     ), ## end of column
     ## footer ----
-    column(width = 12,
-           style = "background-color:#003366; border-top:2px solid #fcba19;",
-           
-            tags$footer(class="footer",
-              tags$div(class="container", style="display:flex; justify-content:center; flex-direction:column; text-align:center; height:46px;",
-                tags$ul(style="display:flex; flex-direction:row; flex-wrap:wrap; margin:0; list-style:none; align-items:center; height:100%;",
-                  tags$li(a(href="https://www2.gov.bc.ca/gov/content/home", "Home", style="font-size:1em; font-weight:normal; color:white; padding-left:5px; padding-right:5px; border-right:1px solid #4b5e7e;")),
-                  tags$li(a(href="https://www2.gov.bc.ca/gov/content/home/disclaimer", "Disclaimer", style="font-size:1em; font-weight:normal; color:white; padding-left:5px; padding-right:5px; border-right:1px solid #4b5e7e;")),
-                  tags$li(a(href="https://www2.gov.bc.ca/gov/content/home/privacy", "Privacy", style="font-size:1em; font-weight:normal; color:white; padding-left:5px; padding-right:5px; border-right:1px solid #4b5e7e;")),
-                  tags$li(a(href="https://www2.gov.bc.ca/gov/content/home/accessibility", "Accessibility", style="font-size:1em; font-weight:normal; color:white; padding-left:5px; padding-right:5px; border-right:1px solid #4b5e7e;")),
-                  tags$li(a(href="https://www2.gov.bc.ca/gov/content/home/copyright", "Copyright", style="font-size:1em; font-weight:normal; color:white; padding-left:5px; padding-right:5px; border-right:1px solid #4b5e7e;")),
-                  tags$li(a(href="https://www2.gov.bc.ca/StaticWebResources/static/gov3/html/contact-us.html", "Contact", style="font-size:1em; font-weight:normal; color:white; padding-left:5px; padding-right:5px; border-right:1px solid #4b5e7e;"))
-                )
-              )
-             )
-    )  ## end of column "footer"
+    bcsapps::bcsFooterUI(id = 'footer')
+
     ## ----
   )  ## end of fluidrow
 )
 
 ## Define server logic ----
 server <- function(input, output, session) {
+  
+  bcsapps::bcsHeaderServer(id = 'header', links = TRUE)
+  bcsapps::bcsFooterServer(id = 'footer')
 
   ## selections ----
   ## defaults: selectInput(inputId, label, choices, selected = NULL, multiple = FALSE,
