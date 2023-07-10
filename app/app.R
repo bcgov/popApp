@@ -678,7 +678,6 @@ server <- function(input, output, session) {
       output <- data1 %>% 
         filter(Region.Type == input$Region.Type) %>%
         filter(Region.Name %in% input$Region.Name) %>%
-        filter(Year %in% input$Year) %>%
         #  filter(Gender %in% input$Gender) %>%
         distinct(Region, !!Reg.Type := Region.Name, Year, Gender, Total) %>%
         group_by(Region, !!rlang::sym(Reg.Type), Gender) %>%
@@ -686,7 +685,8 @@ server <- function(input, output, session) {
                Year = paste(lag(Year), Year, sep = "-")) %>%
         ungroup() %>%
         filter(!is.na(`Year-Over-Year Change`) & Gender %in% input$Gender) %>%
-        mutate(`Year-Over-Year Change` = scales::label_percent(accuracy = 0.1)(`Year-Over-Year Change`))
+        mutate(`Year-Over-Year Change` = scales::label_percent(accuracy = 0.1)(`Year-Over-Year Change`)) %>%
+        filter(str_sub(Year, start = -4) %in% input$Year)
       
     }
     
