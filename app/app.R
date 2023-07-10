@@ -111,13 +111,34 @@ ui <- fluidPage(title = "BC Population Estimates & Projections",
                        ),  ## end of sidebarPanel
                        
                        mainPanel(
-                         ## Age selection ----
+                         ## Statistic selection
                          tags$fieldset(style = "margin-top:20px;",
-                                       tags$legend(h3("Step 2: Select age format")),
+                                       tags$legend(h3("Step 2: Choose statistic")),
+                                       column(width = 12,
+                                              column(width = 12, ## second column to match alignment of age selection  
+                                                     tags$fieldset(tags$legend(h4("Select which statistic to display")),
+                                                                   radioButtons(inputId = "Statistic_Var",
+                                                                                label = NULL,
+                                                                                choices = c("Count", "Proportion", "Average Age", "Median Age", "Change in Total Population"),
+                                                                                inline = TRUE,
+                                                                                selected = "Count"))))
+                         ),   ## end of tags$fieldset (Choose Statistic)
+                         
+                         
+                         ## Age selection ----
+                         # column(width = 12,
+                          conditionalPanel(condition = "input.Statistic_Var == 'Count' | input.Statistic_Var == 'Proportion'",
+                                          tags$fieldset(style = "margin-top:20px;",
+                                       tags$legend(h3("Step 3: Select age format")),
                                        column(width = 12,
                                               column(width = 12,
                                                      tags$fieldset(tags$legend(h4("Select type of age group")),
-                                                                   uiOutput("Age_Type"))
+                                                                   radioButtons(inputId = "Age_Type",
+                                                                                label = NULL,
+                                                                                choices = c("Totals", "Single Year Age Groups", "5-year Age Groups", 
+                                                                                            "Custom Age Groups" = "custom"),
+                                                                                selected = "Totals",
+                                                                                inline = TRUE))
                                               ),  ## end of column
                                               ## Conditional panels: only show if "custom" age type is selected
                                               # https://shiny.rstudio.com/reference/shiny/1.0.5/conditionalPanel.html
@@ -176,10 +197,26 @@ ui <- fluidPage(title = "BC Population Estimates & Projections",
                                                      )  ## end of conditionalPanel
                                               )
                                        )
-                         ),  ## end of tags$fieldset (Age selection)
-                         ## Customize layout ----
+                         )),  ## end of tags$fieldset (Age selection)
+                         ## Proportion by gender or age ----
+                         conditionalPanel(
+                           condition = "input.Statistic_Var == 'Proportion'",
+                           tags$fieldset(style = "margin-top:20px;",
+                                         tags$legend(h3("Step 4: Choose Denominator")),
+                                         column(width = 12,
+                                                column(width = 12, ## second column to match alignment of age selection  
+                                                       tags$fieldset(tags$legend(h4("Select Distribution across Age or Gender")),
+                                                                     radioButtons(inputId = "Proportion_Var",
+                                                                                  label = NULL,
+                                                                                  choices = c("Age", "Gender"),
+                                                                                  inline = TRUE,
+                                                                                  selected = "Age"))))
+                           )),   ## end of tags$fieldset (proportion by gender of age)
+                         ## Customize layout (count) ----
+                         conditionalPanel(
+                           condition = "input.Statistic_Var == 'Count' | input.Statistic_Var == 'Proportion'",
                          tags$fieldset(style = "margin-top:20px;",
-                                       tags$legend(h3("Step 3: Customize layout")),
+                                       tags$legend(h3(textOutput("layout_step"))),
                                                    column(width = 12,
                                                    column(width = 12, ## second column to match alignment of age selection  
                                                           tags$fieldset(tags$legend(h4("Select variable to display as columns")),
@@ -187,12 +224,13 @@ ui <- fluidPage(title = "BC Population Estimates & Projections",
                                                                                      label = NULL,
                                                                                      choices = c("Age", "Gender", "Year", "None"),
                                                                                      inline = TRUE,
-                                                                                     select = "Age"))))
-                                       ),   ## end of tags$fieldset (Customize layout)
+                                                                                     selected = "Age"))))
+                                       )),   ## end of tags$fieldset (Customize layout (count))
                          ## Actions and table ----
                          br(),
                          tags$fieldset(
-                           tags$legend(h3("Step 4: Action")),
+                          # tags$legend(h3("Step 4: Action")),
+                           hr(),
                            column(width=12,
                                   actionButton(inputId = "goButton", label = "Generate output"),
                                   actionButton(inputId = "resetButton", label = "Reset selection"),
@@ -328,20 +366,22 @@ server <- function(input, output, session) {
                 selectize = FALSE, size = 3) ## QQ: Is 4 a minimum? It's ignoring size=3
   })
   
-  ## select type of age group, just one
-  output$Age_Type <- renderUI({
-    radioButtons(inputId = "Age_Type",
-                 label = NULL,
-                 choices = c("Totals", "Single Year Age Groups", "5-year Age Groups", 
-                             "Custom Age Groups" = "custom"),
-                 selected = "Totals",
-                 inline = TRUE)
-  })
-  
+
   ## example table for custom age groups (as text to keep decimals out)
   output$example_table <- renderTable({
     matrix(data = c("15", "24",  "25", "54",  "55", "64",  "65", "74"),
            nrow = 4, ncol = 2, byrow = TRUE, dimnames = list(c(1:4), c("From", "To")))
+  })
+  
+  
+  output$layout_step <- renderText({
+    
+    text <- case_when(
+      input$Statistic_Var == "Count" ~ "Step 4: Customize Layout",
+      input$Statistic_Var == "Proportion" ~ "Step 5: Customize Layout",
+      TRUE ~ ""
+    )
+    
   })
 
 
@@ -354,7 +394,8 @@ server <- function(input, output, session) {
       filter(Region.Name == initVals[2]) %>%
       filter(Year == initVals[3]) %>%
       # filter(Gender == initVals[4]) %>%
-      select(Region, !!initVals[1] := Region.Name, Year, Gender, Total)
+      select(Region, !!initVals[1] := Region.Name, Year, Gender, Total) %>%
+      mutate(Total = format(Total, big.mark = ","))
   }
   
   # https://stackoverflow.com/questions/54393592/hide-plot-when-action-button-or-slider-changes-in-r-shiny
@@ -550,26 +591,128 @@ server <- function(input, output, session) {
 
     ## B. make selections
     Reg.Type <- c(input$Region.Type)  ## to be able to use as dynamic name in select
-    output <- df[df$Region.Type == input$Region.Type, ] %>%
+    output <- df %>%
+      filter(Region.Type == input$Region.Type) %>%
       filter(Region.Name %in% input$Region.Name) %>%
       filter(Year %in% input$Year) %>%
-      filter(Gender %in% input$Gender) %>%
+    #  filter(Gender %in% input$Gender) %>%
       select(Region, !!Reg.Type := Region.Name, everything(), -Region.Type)
+
+    ## C. Statistic
     
-    ## C. customize layout 
-    output <- output %>%
-      pivot_longer(-c(Region, !!Reg.Type, Year, Gender),
-                   names_to = "Age", values_to = "Population")
+    ## C.1 Count (default)
+    if(input$Statistic_Var == "Count") {
+      output <- output %>% 
+        pivot_longer(-c(Region, !!Reg.Type, Year, Gender),
+                     names_to = "Age", values_to = "Population") %>%
+        filter(Gender %in% input$Gender)
+    }
     
-    if(input$Column_Var != "None") {
+    
+    ## C.2 Proportions
+    if(input$Statistic_Var == "Proportion") {
+      
+      output <- output %>%
+        pivot_longer(-c(Region, !!Reg.Type, Year, Gender),
+                     names_to = "Age", values_to = "Population")
+      
+      ifelse(input$Proportion_Var == "Gender",
+           ## by gender
+           output <- output %>%
+             pivot_wider(names_from = Gender, values_from = "Population") %>%
+             mutate(across(c(M,F,T), ~scales::label_percent(accuracy = 0.1)(janitor::round_half_up(.x/T, digits = 3)))) %>%
+             pivot_longer(c(M,F,T), names_to = "Gender", values_to = "Population"),
+           ## by age
+           output <- output %>%
+             pivot_wider(names_from = Age, values_from = "Population") %>%
+             mutate(across(-c(Region, !!Reg.Type, Year, Gender), ~scales::label_percent(accuracy = 0.1)(janitor::round_half_up(.x/Total, digits = 3)))) %>%
+             pivot_longer(-c(Region, !!Reg.Type, Year, Gender), names_to = "Age", values_to = "Population")
+           )
+      
+      output <- output %>%
+        filter(Gender %in% input$Gender)
+      
+    }
+    
+    ## C.3 Average Age
+    if(input$Statistic_Var == "Average Age") {
+      
+      output <- data1 %>% ## include all ages in average calculation
+        filter(Region.Type == input$Region.Type) %>%
+        filter(Region.Name %in% input$Region.Name) %>%
+        filter(Year %in% input$Year) %>%
+        #  filter(Gender %in% input$Gender) %>%
+        select(Region, !!Reg.Type := Region.Name, everything(), -Region.Type) %>%
+        rename_all(str_remove_all, "\\+") %>%
+        pivot_longer(-c(Region, !!Reg.Type, Year, Gender, Total),
+                     names_to = "Age", values_to = "Population", names_transform = as.numeric) %>%
+        group_by(Region, !!rlang::sym(Reg.Type), Year, Gender, Total) %>%
+        summarize(`Average Age` = janitor::round_half_up(weighted.mean(x = Age, w = Population), digits = 1), .groups = "drop") %>%
+        filter(Gender %in% input$Gender)
+      
+    }
+    
+    
+    ## C.4 Median Age
+    if(input$Statistic_Var == "Median Age") {
+      
+      output <- data1 %>% ## include all ages in average calculation
+        filter(Region.Type == input$Region.Type) %>%
+        filter(Region.Name %in% input$Region.Name) %>%
+        filter(Year %in% input$Year) %>%
+        #  filter(Gender %in% input$Gender) %>%
+        select(Region, !!Reg.Type := Region.Name, everything(), -Region.Type) %>%
+        rename_all(str_remove_all, "\\+") %>%
+        pivot_longer(-c(Region, !!Reg.Type, Year, Gender, Total),
+                     names_to = "Age", values_to = "Population", names_transform = as.numeric) %>%
+        group_by(Region, !!rlang::sym(Reg.Type), Year, Gender, Total) %>%
+        summarize(`Median Age` = median_pop(Age, Population, Total), .groups = "drop") %>%
+        filter(Gender %in% input$Gender)
+      
+      
+    }
+    
+    ## C.5 Growth
+    if(input$Statistic_Var == "Change in Total Population") {
+      
+      output <- data1 %>% 
+        filter(Region.Type == input$Region.Type) %>%
+        filter(Region.Name %in% input$Region.Name) %>%
+        filter(Year %in% input$Year) %>%
+        #  filter(Gender %in% input$Gender) %>%
+        distinct(Region, !!Reg.Type := Region.Name, Year, Gender, Total) %>%
+        group_by(Region, !!rlang::sym(Reg.Type), Gender) %>%
+        mutate(`Year-Over-Year Change` = janitor::round_half_up(Total/lag(Total) - 1, digits = 3),
+               Year = paste(lag(Year), Year, sep = "-")) %>%
+        ungroup() %>%
+        filter(!is.na(`Year-Over-Year Change`) & Gender %in% input$Gender) %>%
+        mutate(`Year-Over-Year Change` = scales::label_percent(accuracy = 0.1)(`Year-Over-Year Change`))
+      
+    }
+    
+    
+    ## D. customize layout 
+    if(input$Statistic_Var %in% c("Count", "Proportion") & input$Column_Var != "None") {
       output <- output %>%
         pivot_wider(names_from = input$Column_Var, values_from = "Population")
     }
     
+    
+    if("Year" %in% names(output)) {
+      output <- output %>%
+        mutate(across(where(is.numeric) & !Year, format, big.mark = ","))
+      
+    } else {
+      output <- output %>%
+        mutate(across(where(is.numeric), format, big.mark = ","))
+      
+    }
+    
+    
     output
 
-    ## D. call data_df() in renderDataTable to create table in app
-    ## E. call data_df() in downloadHandler to download data
+    ## E. call data_df() in renderDataTable to create table in app
+    ## F. call data_df() in downloadHandler to download data
 
   })
 
