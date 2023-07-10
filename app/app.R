@@ -51,6 +51,7 @@ if (!require('rsconnect')) install.packages('rsconnect')
 if (!require('DT')) install.packages('DT')
 if (!require('GAlogger')) devtools::install_github("bnosac/GAlogger")
 if (!require('markdown')) install.packages('markdown')
+if (!require('scales')) install.packages('scales')
 
 ## Google Analytics ----
 GAlogger::ga_set_tracking_id("UA-150850915-1")
