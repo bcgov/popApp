@@ -63,7 +63,7 @@ ui <- fluidPage(title = "BC Population Estimates & Projections",
                                                   label = h4("Select a region type"),
                                                   choices = sort(unique(data1$Region.Type)),  #MK: added alpha-sort on region types
                                                   selected = initVals[[1]],         ## default selection: "Local Health Area", 
-                                                  selectize = FALSE, size = 11    ## forces all 10 options to be shown at once (not drop-down); MK: changed size from 10 to 11 to include TEA
+                                                  selectize = FALSE, size = 12    ## forces all 12 options to be shown at once (not drop-down); MK: changed size from 10 to 11 to include TEA
                                       ),
                                       uiOutput("Region.Name"),
                                       uiOutput("Switch.Year"),
@@ -739,6 +739,12 @@ server <- function(input, output, session) {
              downloadLink(outputId = "downloadTranslation", label = "here"),
              "</b>.</li>"
             )
+    )
+    
+    notes <- notes %>% append(
+      "<li>Wondering about the location of a particular region or its boundaries? Check out the 
+      <b><a href = 'https://www2.gov.bc.ca/gov/content/data/geographic-data-services/land-use/administrative-boundaries'>Administrative Boundaries</a></b> 
+      page for more information.</li>",
     )
     
     notes <- notes %>% append(
