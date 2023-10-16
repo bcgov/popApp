@@ -45,6 +45,18 @@ ui <- fluidPage(title = "BC Population Estimates & Projections",
     column(width = 12,
            style = "margin-top:100px",
            
+           wellPanel(width = 12,
+                     style = "background-color: #deeaf6;",
+                     HTML("<u>Note to users October 16, 2023:</u><br> Population counts by Municipality, 
+                          Regional District, and Development Region were updated in July 2023;
+                          provincial totals for these geographies differ from the other geographies 
+                          that were updated in November 2022 using older information.<br><br> 
+                          On September 27, 2023, Statistics Canada released a new series of
+                          provincial-level population estimates based on the 2021 Census. 
+                          Revisions to BC Stats sub-provincial population counts for all geographies
+                          aligning to the new re-based estimates from Statistics Canada will be 
+                          published in November 2023.")),
+           
            ## creating tabs here
            tabsetPanel(
              id = "tabs",
