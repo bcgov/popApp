@@ -18,7 +18,7 @@ if (!require('shiny')) install.packages('shiny')
 if (!require('shinydashboard')) install.packages('shinydashboard')
 if (!require('rsconnect')) install.packages('rsconnect')
 if (!require('DT')) install.packages('DT')
-if (!require('GAlogger')) devtools::install_github("bnosac/GAlogger")
+#if (!require('GAlogger')) devtools::install_github("bnosac/GAlogger")
 if (!require('markdown')) install.packages('markdown')
 if (!require('scales')) install.packages('scales')
 if (!require('bcdata')) install.packages('bcdata')
@@ -28,9 +28,9 @@ if (!require('bcsapps')) remotes::install_github('bcgov/bcsapps')
 switch_wording <- "Estimates above, Projections below"  ## text in Years selection AFTER switch-year
 
 ## Google Analytics ----
-GAlogger::ga_set_tracking_id("UA-150850915-1")
-GAlogger::ga_set_approval(consent = TRUE)
-GAlogger::ga_collect_pageview(page = "/popApp")
+# GAlogger::ga_set_tracking_id("UA-150850915-1")
+# GAlogger::ga_set_approval(consent = TRUE)
+# GAlogger::ga_collect_pageview(page = "/popApp")
 
 ## read data ----
 

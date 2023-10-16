@@ -41,6 +41,16 @@ ui <- fluidPage(title = "BC Population Estimates & Projections",
     ## appname = title that will appear in the header
     ## header ----
     bcsapps::bcsHeaderUI(id = 'header', appname = "Population Estimates & Projections for British Columbia"),
+    
+    htmltools::HTML("<!-- Google tag (gtag.js) -->
+<script async src='https://www.googletagmanager.com/gtag/js?id=G-904KHMXRJB'></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+
+  gtag('config', 'G-904KHMXRJB');
+</script>"),
 
     column(width = 12,
            style = "margin-top:100px",
@@ -423,9 +433,9 @@ server <- function(input, output, session) {
   ### reactive resetButton send analytics when reset ----
   observeEvent(input$resetButton, {
     
-    ga_collect_event(event_category = "resetButton", 
-                     event_label = "Reset", 
-                     event_action = "Reset application")
+    # ga_collect_event(event_category = "resetButton", 
+    #                  event_label = "Reset", 
+    #                  event_action = "Reset application")
     
     ## just reload the session
     session$reload()
@@ -437,18 +447,18 @@ server <- function(input, output, session) {
   
   observeEvent(rv$download_flag, {
     
-    ga_collect_event(event_category = "downloadButton", 
-                     event_label = paste0("Download: ", input$Age_Type, ", ", input$Region.Type), 
-                     event_action = "Download data")
+    # ga_collect_event(event_category = "downloadButton", 
+    #                  event_label = paste0("Download: ", input$Age_Type, ", ", input$Region.Type), 
+    #                  event_action = "Download data")
     
   }, ignoreInit = TRUE)
   
   ### reactive send analytics when query table ----
   observeEvent(input$goButton, {
     
-    ga_collect_event(event_category = "goButton", 
-                     event_label = paste0("Query: ", input$Age_Type, ", ", input$Region.Type), 
-                     event_action = "Generate data")
+    # ga_collect_event(event_category = "goButton", 
+    #                  event_label = paste0("Query: ", input$Age_Type, ", ", input$Region.Type), 
+    #                  event_action = "Generate data")
     
   })
   
