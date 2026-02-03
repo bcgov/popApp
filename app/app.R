@@ -36,6 +36,8 @@
 # 2025-01-29 JH  1) Changed code to rename Age group columns in case custom age groups overlapped.
 # 2026-01-15 JP  1) Changed code to add notes that reference Statistics Canada's estimates in notes and Methods section.
 #                2) Added parameters to facilate the update
+# 2026-02-03 SY  1) Moved GA tracking code to www
+#                2) Added code to track file downloads
 
 
 #Parameters---
@@ -55,16 +57,6 @@ ui <- fluidPage(title = "BC Population Estimates & Projections",
     ## header ----
     bcsapps::bcsHeaderUI(id = 'header', appname = "Population Estimates & Projections for British Columbia"),
     
-    htmltools::HTML("<!-- Google tag (gtag.js) -->
-<script async src='https://www.googletagmanager.com/gtag/js?id=G-904KHMXRJB'></script>
-<script>
-  window.dataLayer = window.dataLayer || [];
-  function gtag(){dataLayer.push(arguments);}
-  gtag('js', new Date());
-
-  gtag('config', 'G-904KHMXRJB');
-</script>"),
-
     column(width = 12,
            style = "margin-top:100px",
            
@@ -762,6 +754,8 @@ server <- function(input, output, session) {
     },
 
     content = function(file) {
+      ## send download event tracking to google analytics
+      session$sendCustomMessage("trackDownload", list(filename = "Population_Projections.csv"))
       
       #!!! MK: Tweaking code to add header to downloaded output
       df <- data_df()
@@ -806,6 +800,9 @@ Years: ", yrs,"
     },
     
     content = function(file) {
+      ## send download event tracking to google analytics
+      session$sendCustomMessage("trackDownload", list(filename = "lha_translation.csv"))
+      
       file.copy("data/lha_translation.csv", file)
     }
   )
