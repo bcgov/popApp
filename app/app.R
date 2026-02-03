@@ -30,7 +30,20 @@
 # Revision notes:
 # 2022-12-01 MK: 1) Changed region type select box to size=11 to fit TEA that was added; 2) Added alpha-sort on region type names
 # 2022-04-03 MK: Added note to bottom app page explaining that CHSA numbering has been updated.
+# 2024-07-26 MK: 1) Tweaked code to add header information to the downloaded CSV output;
+#                2) Tweaked code to include Estimate/Projection (Type) variable in the output.
+#                3) Tweaked code to sort region selections by region ID numerically.
+# 2025-01-29 JH  1) Changed code to rename Age group columns in case custom age groups overlapped.
+# 2026-01-15 JP  1) Changed code to add notes that reference Statistics Canada's estimates in notes and Methods section.
+#                2) Added parameters to facilate the update
 
+
+#Parameters---
+date_STATCAN_CD <- "January 16, 2025" #Date when STATCAN's CD population estimates used on PEOPLE were published.
+
+date_STATCAN_HSDA <- "February 19, 2025" #Date when STATCAN's HSDA population estimates used on PEOPLE were published.
+
+PEOPLE_Update_Date <- "December 19, 2025" #Date when the latest version of PEOPLE is/was published
 
 ## Define ui layout ----
 # UI demonstrating column layouts
@@ -276,9 +289,19 @@ server <- function(input, output, session) {
   ## size = how many items to show in box, requires selectize = FALSE
   ## select Region(s) within selected Region.Type, multiples OK
   output$Region.Name <- renderUI({
+
+    #!!! MK: tweaking code to sort by Region ID numerically
+    unique_regions <- data1 %>% 
+      filter(Region.Type == input$Region.Type) %>% 
+      select(Region,Region.Name) %>% unique() %>%
+      mutate(Region_sort = as.numeric(Region)) %>%
+      arrange(Region_sort)
+    unique_num <- unique_regions$Region
+    unique_name <- unique_regions$Region.Name
+#    unique_num <- unique(data1$Region[data1$Region.Type == input$Region.Type])
+#    unique_name <- unique(data1$Region.Name[data1$Region.Type == input$Region.Type])
+    #!!! end of code tweaking
     
-    unique_num <- unique(data1$Region[data1$Region.Type == input$Region.Type])
-    unique_name <- unique(data1$Region.Name[data1$Region.Type == input$Region.Type])
     display_name <- as.list(paste0(unique_num, " - ", unique_name))
     
     choices_list <- as.list(unique_name)
@@ -388,7 +411,9 @@ server <- function(input, output, session) {
       filter(Region.Name == initVals[[2]]) %>%
       filter(Year == initVals[[3]]) %>%
       filter(Gender %in% initVals[[4]]) %>%
-      select(Region, !!initVals[[1]] := Region.Name, Year, Gender, Total) %>%
+      #!!! MK: keeping Type variable
+      select(Region, !!initVals[[1]] := Region.Name, Year, Type, Gender, Total) %>%
+#      select(Region, !!initVals[[1]] := Region.Name, Year, Gender, Total) %>%
       mutate(Total = format(Total, big.mark = ","))
   }
   
@@ -467,8 +492,18 @@ server <- function(input, output, session) {
       filter(Region.Name %in% input$Region.Name) %>%
       ## remove empty Age columns (some Regions go to 90+ some to 100+)
       janitor::remove_empty(which = c("rows", "cols")) %>%
-      select(Region, !!rlang::sym(Reg.Type) := Region.Name, everything(), -Region.Type, -Type) %>%
-      pivot_longer(-c(Region, !!rlang::sym(Reg.Type), Year, Gender), names_to = "Age", values_to = "Pop")
+      #!!! MK: keeping Estimate/Projection variable (Type) for later
+      select(Region, !!rlang::sym(Reg.Type) := Region.Name, everything(), -Region.Type) %>%
+      pivot_longer(-c(Region, !!rlang::sym(Reg.Type), Year, Type, Gender), names_to = "Age", values_to = "Pop")
+#      select(Region, !!rlang::sym(Reg.Type) := Region.Name, everything(), -Region.Type, -Type) %>%
+#      pivot_longer(-c(Region, !!rlang::sym(Reg.Type), Year, Gender), names_to = "Age", values_to = "Pop")
+    
+    
+      #!!!MK: adding sort by region ID numerically
+      output <- output %>% 
+        mutate(Region_sort = as.numeric(Region)) %>%
+        arrange(Region_sort) %>%
+        select(-Region_sort)
     
     ### B. Create age groups ----
     ## depending on age group type chosen
@@ -505,7 +540,9 @@ server <- function(input, output, session) {
           fill(Age_grp) %>%
           ## make factor to retain order
           mutate(Age = fct_inorder(Age_grp)) %>%
-          group_by(Region, !!rlang::sym(Reg.Type), Year, Gender, Age) %>%
+          #!!!MK: keeping Type variable
+          group_by(Region, !!rlang::sym(Reg.Type), Year, Type, Gender, Age) %>%
+#          group_by(Region, !!rlang::sym(Reg.Type), Year, Gender, Age) %>%
           summarize(Pop = sum(Pop), .groups = "drop")
         
       }
@@ -565,9 +602,30 @@ server <- function(input, output, session) {
                                 Age_num > max(custom_ages$S, custom_ages$E, na.rm = TRUE) ~ paste0(max(custom_ages$S, custom_ages$E, na.rm = TRUE) +1, "+")
                                 
                                 
-            )) %>%
+            ))
+        
+        ## JH (2025-01-29): rename Age_grp in case there is overlap in any starting and ending ages
+        tmp_get_names <- output %>% filter(Age_grp != "Total") %>% pull(Age_grp) %>% unique()
+        for(i in seq_along(tmp_get_names)) {
+          tmp_ages <- output %>% filter(Age_grp == tmp_get_names[i]) %>% pull(Age_num) %>% unique()
+          tmp_min <- min(tmp_ages, na.rm = TRUE)
+          tmp_max <- max(tmp_ages, na.rm = TRUE)
+          if(tmp_min == 0) {
+            new_name <- paste0("LT", tmp_max+1)
+          } else if(tmp_max > max(custom_ages$S, custom_ages$E, na.rm = TRUE)) {
+            new_name <- paste0(tmp_min, "+")
+          } else {
+            new_name <- paste0(tmp_min, " to ", tmp_max)
+          }
+          output <- output %>% mutate(Age_grp = case_when(Age_grp == tmp_get_names[i] ~ new_name, TRUE ~ Age_grp))
+          rm(tmp_ages, tmp_min, tmp_max, new_name)
+        }; rm(i, tmp_get_names)
+        
+        output <- output %>%
           mutate(Age = fct_inorder(Age_grp)) %>%
-          group_by(Region, !!rlang::sym(Reg.Type), Year, Gender, Age) %>%
+        #!!! MK: keeping Type variable
+          group_by(Region, !!rlang::sym(Reg.Type), Year, Type, Gender, Age) %>%
+#          group_by(Region, !!rlang::sym(Reg.Type), Year, Gender, Age) %>%
           summarize(Pop = sum(Pop), .groups = "drop") 
       
       }
@@ -595,8 +653,11 @@ server <- function(input, output, session) {
            ## by age
            output <- output %>%
              pivot_wider(names_from = "Age", values_from = "Pop") %>%
-             mutate(across(-c(Region, !!rlang::sym(Reg.Type), Year, Gender), ~scales::label_percent(accuracy = 0.1)(janitor::round_half_up(.x/Total, digits = 3)))) %>%
-             pivot_longer(-c(Region, !!rlang::sym(Reg.Type), Year, Gender), names_to = "Age", values_to = "Pop")
+             #!!! MK: keeping Type variable
+             mutate(across(-c(Region, !!rlang::sym(Reg.Type), Year, Type, Gender), ~scales::label_percent(accuracy = 0.1)(janitor::round_half_up(.x/Total, digits = 3)))) %>%
+             pivot_longer(-c(Region, !!rlang::sym(Reg.Type), Year, Type, Gender), names_to = "Age", values_to = "Pop")
+#             mutate(across(-c(Region, !!rlang::sym(Reg.Type), Year, Gender), ~scales::label_percent(accuracy = 0.1)(janitor::round_half_up(.x/Total, digits = 3)))) %>%
+#             pivot_longer(-c(Region, !!rlang::sym(Reg.Type), Year, Gender), names_to = "Age", values_to = "Pop")
            )
     }
     
@@ -610,7 +671,9 @@ server <- function(input, output, session) {
                Age_num = as.numeric(Age_num)) %>%
         fill(Total) %>%
         filter(!is.na(Age_num)) %>%
-        group_by(Region, !!rlang::sym(Reg.Type), Year, Gender, Total) %>%
+        #!!! MK: keeping Type variable
+        group_by(Region, !!rlang::sym(Reg.Type), Year, Type, Gender, Total) %>%
+#        group_by(Region, !!rlang::sym(Reg.Type), Year, Gender, Total) %>%
         summarize(`Average Age` = janitor::round_half_up(weighted.mean(x = Age_num, w = Pop), digits = 1), .groups = "drop")
     }
     
@@ -625,7 +688,9 @@ server <- function(input, output, session) {
                Age_num = as.numeric(Age_num)) %>%
         fill(Total) %>%
         filter(!is.na(Age_num)) %>%
-        group_by(Region, !!rlang::sym(Reg.Type), Year, Gender, Total) %>%
+        #!!! MK: keeping Type variable
+        group_by(Region, !!rlang::sym(Reg.Type), Year, Type, Gender, Total) %>%
+#        group_by(Region, !!rlang::sym(Reg.Type), Year, Gender, Total) %>%
         summarize(`Median Age` = median_pop(Age_num, Pop, Total), .groups = "drop")
       
       
@@ -637,6 +702,7 @@ server <- function(input, output, session) {
       output <- output %>%
         filter(Age == "Total") %>%
         select(-Age) %>%
+        #!!! MK: grouping by Type messes up calculation so leaving code here as-is
         group_by(Region, !!rlang::sym(Reg.Type), Gender) %>%
         mutate(`Year-Over-Year Change` = janitor::round_half_up(Pop/lag(Pop) - 1, digits = 3),
                Year = paste(lag(Year), Year, sep = "-")) %>%
@@ -651,13 +717,20 @@ server <- function(input, output, session) {
       filter(Gender %in% input$Gender) %>%
       ## for growth: 2022-2023 or other statistics: 2023
       filter(str_sub(Year, start = -4) %in% input$Year) %>%
-      mutate(across(names(output)[!(names(output) %in% c("Region", Reg.Type, "Year", "Gender", "Age"))], format, big.mark = ","))
-    
+      #!!! MK: keeping Type variable
+      mutate(across(names(output)[!(names(output) %in% c("Region", Reg.Type, "Year", "Type", "Gender", "Age"))], format, big.mark = ","))
+#      mutate(across(names(output)[!(names(output) %in% c("Region", Reg.Type, "Year", "Gender", "Age"))], format, big.mark = ","))    
     
     ### E. customize layout----
     if(input$Statistic_Var %in% c("Count", "Proportion") & input$Column_Var != "None") {
-      output <- output %>%
-        pivot_wider(names_from = input$Column_Var, values_from = "Pop")
+        #!!! MK: if Year column is selected, include Type in pivot wider
+        if (input$Column_Var == "Year") {
+          output <- output %>% pivot_wider(names_from = c("Type",input$Column_Var), names_expand = F, values_from = "Pop")
+        } else {
+          output <- output %>% pivot_wider(names_from = input$Column_Var, values_from = "Pop")
+        }
+#      output <- output %>%
+#        pivot_wider(names_from = input$Column_Var, values_from = "Pop")
     }
 
     output
@@ -689,7 +762,39 @@ server <- function(input, output, session) {
     },
 
     content = function(file) {
-      write.csv(data_df(), file, row.names = FALSE, na = "")  ## col.names = FALSE, append = TRUE,
+      
+      #!!! MK: Tweaking code to add header to downloaded output
+      df <- data_df()
+      col_names <- names(df)
+      
+      #Reformatting year selection to only show contiguous ranges
+      yrs <- input$Year
+      yrs <- yrs[!grepl("Estimates", yrs)] %>% as.numeric()  #remove est/proj divider text
+      start = c(1, which(diff(yrs) != 1 & diff(yrs) != 0) + 1)  #start of each contiguous sub-range
+      end = c(start - 1, length(yrs)) #end of each contiguous sub-range
+      yr_ranges <- data.frame(start=yrs[start],end=yrs[end])
+      yrs <- apply(yr_ranges,1,function(x) if (x[1]!=x[2]) {paste0(x[1],"-",x[2])} else {x[1]}) %>% str_flatten(",")
+#      yrs <- input$Year %>% str_flatten(.," ") %>% str_remove("-- Estimates above, Projections below --")
+      
+      #Building text block for header
+      text <- paste0("
+P.E.O.P.L.E. Population Estimates and Projections
+Author: BC Stats
+Release date: ", PEOPLE_Update_Date,"
+Geographic level: ",input$Region.Type,"
+Years: ", yrs,"
+-------------------------------------------------
+")
+      #Wrangling the df output so that header text and column names appear before the data values
+      header <- read.table(text=text,header=F,sep="\n")
+      header <- cbind(header, matrix("",nrow(header),ncol(df)-1) %>% as.data.frame())
+      names(header) <- col_names
+      df <- rbind(header,col_names,df) %>% unname()
+      
+      write.csv(df, file, row.names = F, na = "")
+#      write.csv(data_df(), file, row.names = FALSE, na = "")  ## col.names = FALSE, append = TRUE,
+      #!!! MK: End of code tweak
+      
       rv$download_flag <- rv$download_flag + 1
     }
   )
@@ -729,6 +834,16 @@ server <- function(input, output, session) {
                                       "years old.</li>"))
       
     }
+    
+    notes <- notes %>% append(
+      paste0("<li>This version of P.E.O.P.L.E. was published on <b>",
+             PEOPLE_Update_Date, "</b>",
+             " and uses as reference Statistics Canada's population estimates for ",
+             "<b><a href = 'https://www150.statcan.gc.ca/t1/tbl1/en/tv.action?pid=1710015201'>Census Divisions</a></b>",
+             " published on <b>", date_STATCAN_CD, "</b> and for ", 
+             "<b><a href = 'https://www150.statcan.gc.ca/t1/tbl1/en/tv.action?pid=1710015701'>Health Service Delivery Areas</a></b>",
+             " published on <b>", date_STATCAN_HSDA,"</b>.</li>")
+    )
     
     notes <- notes %>% append(
       "<li>All figures are as of July 1 and are adjusted for census net undercoverage 
