@@ -3,7 +3,7 @@ title: "Methods"
 output: html_document
 ---
 
-Methodology for the population estimates from 2017-2021 and for the projections from 2022-2045 has changed. See **<a href = 'https://www2.gov.bc.ca/assets/gov/data/statistics/people-population-community/population/bc_population_estimates_and_projections_methodological_highlights.pdf' target = '_blank'>documentation on the new methodology</a>** for details.
+Methodology for the population estimates projections has changed. See **<a href = 'https://www2.gov.bc.ca/assets/gov/data/statistics/people-population-community/population/people_2024_methodology_and_assumptions.pdf' target = '_blank'>documentation on the new methodology</a>** for details.
 
 Additional information can be found on the **<a href = 'https://www2.gov.bc.ca/gov/content/data/statistics/people-population-community/population' target = '_blank'>BC Stats website</a>** or by following the links below:
 
@@ -11,11 +11,9 @@ Additional information can be found on the **<a href = 'https://www2.gov.bc.ca/g
 
 * <a href='https://www2.gov.bc.ca/gov/content/data/statistics/people-population-community/population/population-estimates/about-population-estimates' target = '_blank'>About Population Estimates</a>
 
-* <a href='https://www2.gov.bc.ca/assets/gov/data/statistics/people-population-community/population/pop_census_2016_highlights_population_dwellings.pdf' target = '_blank'>2016 Census: Population and Dwelling Counts</a>
+* <a href='https://www12.statcan.gc.ca/census-recensement/2021/dp-pd/prof/index.cfm?Lang=E' target = '_blank'>2021 Census: Population and Dwelling Counts</a>
 
 * <a href='https://www2.gov.bc.ca/gov/content/data/statistics/people-population-community/population/population-projections' target = '_blank'>Population Projections</a>
-
-* <a href='https://www2.gov.bc.ca/assets/gov/data/statistics/people-population-community/population/pop_small_area_population_projections_people_1999.pdf' target = '_blank'>Small Area Population Projections (P.E.O.P.L.E.) (1999)</a>
 
 * <a href='https://www2.gov.bc.ca/gov/content/data/statistics/people-population-community/population/household-projections' target = '_blank'>Household Projections</a>
 
@@ -34,4 +32,11 @@ The source code for this app can be found on GitHub: **<a href='https://github.c
 ### Household Projections App
 
 Related to the population projections are the household projections: **<a href='https://bcstats.shinyapps.io/hsdProjApp' target = '_blank'>https://bcstats.shinyapps.io/hsdProjApp</a>**.
+<br><br>
+
+### Version Information
+
+All data and calculations are based on BC Stats' P.E.O.P.L.E. population estimates and projections. This version of P.E.O.P.L.E. was published on **December 19, 2025**  
+ and uses as reference Statistics Canada's population estimates for **<a href='https://www150.statcan.gc.ca/t1/tbl1/en/tv.action?pid=1710015201' target = '_blank'>Census Divisions</a>** published on **January 16, 2025** and for **<a href='https://www150.statcan.gc.ca/t1/tbl1/en/tv.action?pid=1710015701' target = '_blank'>Health Service Delivery Areas</a>** published 
+ on **February 19, 2025**.
 <br><br>
