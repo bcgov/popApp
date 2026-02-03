@@ -53,6 +53,7 @@ ui <- fluidPage(title = "BC Population Estimates & Projections",
   theme = "bootstrap.css",
   HTML("<html lang='en'>"),
   fluidRow(
+    tags$head(includeHTML("www/google-analytics.html")),
     ## appname = title that will appear in the header
     ## header ----
     bcsapps::bcsHeaderUI(id = 'header', appname = "Population Estimates & Projections for British Columbia"),
